@@ -1,0 +1,21 @@
+{
+  "date": "2026-09-27",
+  "swift_version": "6.4 (swift-6.4-RELEASE)",
+  "installer_version": "6.4.0",
+  "installer_sha256": "76169a85bcba82854a0cd8f9655ffb74b3758d60c35a245457510095f2823c03",
+  "installer_signature": "Valid; Apple Inc.",
+  "installer_exit_code": 0,
+  "target": "x86_64-unknown-windows-msvc",
+  "command": "swift test (Visual C++ developer environment and Swift SDKROOT loaded)",
+  "test_suite": "MenuStateTests",
+  "tests_executed": 7,
+  "failures": 0,
+  "build_exit_code": 0,
+  "warnings": [
+    "Prebuilt WinSDK wchar_t context mismatch recovered by compiler",
+    "SwiftPM optional .build/debug symbolic link could not be created"
+  ],
+  "swiftui_uikit_compiled": false,
+  "ios_app_built": false,
+  "device_testing_completed": false
+}

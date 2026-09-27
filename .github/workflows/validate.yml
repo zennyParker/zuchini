@@ -1,0 +1,51 @@
+name: Validate source
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  apple-build:
+    runs-on: macos-14
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show toolchain
+        run: xcodebuild -version && swift --version
+      - name: Validate project structure
+        run: python3 scripts/validate_structure.py
+      - name: Test menu state and configuration
+        run: swift test
+      - name: Build the iOS simulator demo
+        run: >-
+          xcodebuild
+          -project Examples/ZuchiniDemo/ZuchiniDemo.xcodeproj
+          -scheme ZuchiniDemo
+          -configuration Debug
+          -sdk iphonesimulator
+          -destination 'generic/platform=iOS Simulator'
+          -derivedDataPath DerivedData
+          CODE_SIGNING_ALLOWED=NO build
+      - name: Build the unsigned iPhone demo
+        run: >-
+          xcodebuild
+          -project Examples/ZuchiniDemo/ZuchiniDemo.xcodeproj
+          -scheme ZuchiniDemo
+          -configuration Release
+          -sdk iphoneos
+          -destination 'generic/platform=iOS'
+          -derivedDataPath DerivedData
+          CODE_SIGNING_ALLOWED=NO build
+      - name: Package standalone demo builds
+        run: |
+          mkdir -p build/Payload
+          ditto DerivedData/Build/Products/Release-iphoneos/ZuchiniDemo.app build/Payload/ZuchiniDemo.app
+          ditto -c -k --keepParent build/Payload build/ZuchiniDemo-unsigned.ipa
+          ditto -c -k --keepParent DerivedData/Build/Products/Debug-iphonesimulator/ZuchiniDemo.app build/ZuchiniDemo-simulator.zip
+      - name: Upload demo builds
+        uses: actions/upload-artifact@v4
+        with:
+          name: ZuchiniDemo-builds
+          path: |
+            build/ZuchiniDemo-unsigned.ipa
+            build/ZuchiniDemo-simulator.zip
+          if-no-files-found: error
+          retention-days: 14
