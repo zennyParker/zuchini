@@ -17,7 +17,8 @@ private struct DemoRoot: View {
 
     init() {
         do {
-            _store = StateObject(wrappedValue: MenuStore(definition: try AimbotMenu.definition()))
+            let definition = try AimbotMenu.definition()
+            _store = StateObject(wrappedValue: MenuStore(definition: definition))
         } catch {
             preconditionFailure("Invalid menu definition: \(error)")
         }
