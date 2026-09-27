@@ -41,6 +41,7 @@ The reverse-engineered adapter must be validated on device against the inspected
 - The owner plans to sign/install on an available iPhone with ESign. The unsigned IPA still needs a suitable Apple certificate and provisioning profile; successful compilation does not establish installation compatibility.
 - Keep signing secrets, provisioning profiles, game archives, and extracted game binaries out of this public repository.
 - Artifact `Zucchini-game-runtime` contains our new runtime dylib. `scripts/package-game.py` combines it locally with the exact supplied game ZIP into a new unsigned game IPA. The existing `ZuchiniDemo-unsigned.ipa` remains only the separate UI harness.
+- Current experimental runtime source: `ec1fc25bed947aac02ff4af01b40ee4f83c695c2`. Its intended local test package is `../builds/Zucchini-FreeFire-1.132.1-ec1fc25-unsigned.ipa`; see `docs/VALIDATION.md` for final package verification and CI evidence. It requires iOS 16+ and the unchanged bundle identifier `com.dts.freefireth`. Older local experimental packages are superseded.
 - Apple signing reference: https://developer.apple.com/documentation/xcode/distributing-your-app-to-registered-devices
 
 ## Validation and completion criteria

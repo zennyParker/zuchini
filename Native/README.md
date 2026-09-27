@@ -28,7 +28,7 @@ The packager verifies the original main executable, Unity binary, and metadata h
 
 ## Required iPhone validation
 
-Sign the entire output with ESign using the user's certificate/profile on iOS 16+. Successful CI compilation and packaging do not establish installation, startup, API behavior, visibility correctness, aim rotation behavior, or stability in a match.
+Sign the entire output with ESign using the user's certificate/profile on iOS 16+. Keep the bundle identifier `com.dts.freefireth`; changing it causes the version guard to leave aiming inactive. Successful CI compilation and packaging do not establish installation, startup, API behavior, visibility correctness, aim rotation behavior, or stability in a match.
 
 1. Launch with Aimbot off and confirm the menu opens without a key prompt. Close it and confirm game touch controls work.
 2. In the intended controlled test environment, enable Aimbot, choose Head or Neck and an FOV, then close the menu. Opening the menu pauses aiming.

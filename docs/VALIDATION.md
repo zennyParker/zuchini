@@ -1,6 +1,26 @@
 # Validation
 
-## Targeting engine revision - 2026-09-27
+## Experimental game integration - 2026-09-27
+
+The repository now contains a game-loaded adapter for the supplied Free Fire 1.132.1 build. Static inspection recovered named player, bone, camera, team, visibility, and aim-rotation methods; all 26 IL2CPP exports required by the adapter were found in its Unity binary. The custom metadata layout was normalized only in an analysis copy, with all 333,780 method records and 1,045 generic-container references checked. See [Native/README.md](../Native/README.md).
+
+The runtime includes automatic menu presentation, disabled-by-default aiming, Head/Neck selection, FOV, conservative physics visibility checks, lifecycle suppression, stale-frame rejection, and local diagnostic export. No extra gameplay controls were added. The local packager preserves the original main executable, Unity binary, and metadata byte-for-byte, replaces the menu library, adjusts Info.plist, and removes obsolete signature resource files for full re-signing.
+
+### Verified build and package
+
+- Runtime source commit: `ec1fc25bed947aac02ff4af01b40ee4f83c695c2`.
+- [Apple CI run 36320643952](https://github.com/zennyParker/zuchini/actions/runs/36320643952) passed: all 29 Swift tests, four packaging tests, simulator/device harness builds, native runtime build, and simulator harness launch. These tests do not execute the game adapter against Free Fire.
+- Local Windows project-structure validation and all four packaging tests passed. The earlier 25 portable Swift tests passed locally; the final Apple run includes those tests and four Apple-only controller tests.
+- Downloaded runtime SHA-256: `129d7c0e87eb5303a20a06f95b277ea07135f7e76de7c81a33dd84b945df106a`, matching the CI artifact hash. Mach-O platform is iOS, minimum 16.0, SDK 17.5. An earlier linker SDK mismatch was corrected before this build. The remaining deprecated-window API warning relates to the legacy Unity window fallback.
+- Final local package: `../builds/Zucchini-FreeFire-1.132.1-ec1fc25-unsigned.ipa`, 986,426,168 bytes. All ZIP entries passed CRC validation, the three original game-binary hashes matched, and the packaged runtime matched the downloaded artifact.
+- Final IPA SHA-256: `973f4711611b4469addf20ed21f59d7976296e7414d809cb34fb4214bb3a4c0b`. The adjacent JSON manifest records these values. The original supplied archive was not modified. Earlier experimental packages are superseded.
+- The IPA is not signed for device installation. Full ESign re-signing and physical-iPhone validation remain outstanding. No full game binary or analysis dump was uploaded to GitHub.
+
+**Physical-device installation, game startup, actual aim movement, wall checks, responsiveness, and long-session stability have not been verified.** The adapter's runtime invocation semantics and frame timing remain assumptions to check on device. Successful compiler tests and synthetic target tests do not establish these properties. No iPhone was available through the local device inventory during this run.
+
+To test: sign the game IPA on iOS 16+ while retaining `com.dts.freefireth`, launch with aiming off, check game touch controls, then enable aiming and close the menu. Hold the closed launcher for 1.2 seconds to export a diagnostic snapshot; return it and any crash report. Full instructions are in [Native/README.md](../Native/README.md#required-iphone-validation).
+
+## Earlier targeting engine revision - 2026-09-27
 
 Implemented portable target selection and smooth aim-direction calculation, plus a main-actor menu/host controller. This operates on supplied snapshots and does not yet access Free Fire. See `AIMING.md`.
 
@@ -10,13 +30,13 @@ Implemented portable target selection and smooth aim-direction calculation, plus
 - Tests also cover FOV boundaries/live changes, both bones, disabling/re-enabling, hidden/dead/allied targets, missing/invalid points, duplicates, target retention/loss, stale/repeated/future frames, stalls, and reset.
 - Project structure and diff checks passed. [Apple CI run 36318139889](https://github.com/zennyParker/zuchini/actions/runs/36318139889) passed for commit `2fbc99991a565c13674577a35818115955d99ae8`: all 28 tests (including the three Apple-only controller tests), simulator and unsigned iPhone builds, simulator launch, and artifact upload. The controller tests use a fake host, not Free Fire.
 
-Game adapter implementation, actual iPhone behavior, gameplay correctness, and human-like perception remain unverified. No detection-evasion result is claimed.
+At this earlier revision the game adapter was not implemented. Actual iPhone behavior, gameplay correctness, and human-like perception remain unverified. No detection-evasion result is claimed.
 
 ## Three-control scope revision - 2026-09-27
 
 Removed Speed from the menu and the validation harness. Current controls are Aimbot enable/disable, Head/Neck, and FOV only. Updated the existing core test to exercise both FOV bounds and turning Aimbot off. All 10 core tests passed locally on Windows with zero failures; the project-structure and diff checks also passed. [Apple validation run 36317124773](https://github.com/zennyParker/zuchini/actions/runs/36317124773), for source commit `22450d47639bdda45633e0312057c19fdd677045`, was queued when this status was recorded; no Apple pass is claimed for this revision yet.
 
-End-to-end game tests remain blocked on the missing integration source/API. No local Free Fire gameplay test has been run; a Windows Swift test cannot run the iOS game. The standalone harness is not the requested final product.
+At this earlier revision there was no game adapter. An experimental adapter has since been implemented in `Native`; it still needs a physical-iPhone test. No local Free Fire gameplay test has been run; a Windows Swift test cannot run the iOS game. The standalone harness is not the requested final product.
 
 ## Previous four-control menu revision - 2026-09-27
 
@@ -55,8 +75,8 @@ Windows tests exclude SwiftUI/UIKit. The GitHub workflow additionally compiles b
 
 ## Required physical-iPhone checks
 
-- Sign/install the standalone IPA through the owner's ESign setup; record iOS version and provisioning details without committing credentials.
+- Sign/install the experimental game IPA through the owner's ESign setup; keep `com.dts.freefireth`, and record iOS version and provisioning details without committing credentials.
 - Repeat interaction/orientation/lifecycle checks.
 - Run 30 minutes with periodic control changes; record responsiveness, crashes, CPU/memory trends, and device temperature.
 
-No physical-iPhone, Free Fire gameplay, targeting accuracy, key-removal, or anti-cheat detection tests have been completed for this revision. The integration source or internal test-build API is still required. Do not treat UI state tests as gameplay validation.
+No physical-iPhone, Free Fire gameplay, targeting accuracy, prompt-free game startup, or anti-cheat detection tests have been completed. The experimental adapter is now implemented; device installation and runtime verification remain required. Do not treat UI state tests as gameplay validation.

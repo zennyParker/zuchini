@@ -2,7 +2,7 @@
 
 `AimingEngine` now implements target selection and smooth aim-direction calculation. It is portable Swift with no networking, hooks, memory access, timer, randomness, or third-party dependencies. `AimingController` connects the existing menu to a host-supplied snapshot/write interface on the main actor.
 
-This is functioning calculation code tested against synthetic game state. **No Free Fire adapter is implemented.** The existing example app remains a menu harness; its IPA is not a game-integrated aimbot. No claims of human indistinguishability, anti-cheat evasion, or guaranteed stability follow from these tests.
+This is functioning calculation code tested against synthetic game state. An [experimental Free Fire adapter](../Native/README.md) now implements this contract using methods recovered from the supplied game. Its device behavior remains unverified. The existing example app remains a separate menu harness. No claims of human indistinguishability, anti-cheat evasion, or guaranteed stability follow from these tests.
 
 ## Behavior
 
@@ -23,11 +23,11 @@ The actual game connection must implement `AimingHost`:
 1. `captureAimFrame()` returns a copied snapshot: increasing frame sequence, monotonic capture time, world-space camera position and forward direction, and target IDs with head/neck positions and enemy/alive/visible flags. Use a distinct ID per spawn. All vectors must use the same coordinate system.
 2. `applyAimCommand(_:)` validates the current scene, camera, frame sequence, and target identity, then applies the absolute unit direction using the game's own aim interface. Return false if anything changed. Do not retain or queue commands for later use.
 
-Create `AimingController(store:host:)`, retain the host, and call `activate()` when the playable camera is ready. Call `step(at:)` from the host's existing frame callback on the main actor, using the same monotonic clock as the snapshots. Capture data no later than that frame's supplied timestamp. Call `suspend()` for backgrounding, scene/match changes, death/respawn, or detachment, and activate again only once current data is ready.
+Create `AimingController(store:host:)`, retain the host, and call `activate()` when the playable camera is ready. Call `step(clock:)` from a main-actor frame callback using the same monotonic clock as the snapshots; it samples time after capture so capture latency counts toward freshness. `step(at:)` remains available for pre-captured frames and deterministic tests. Call `suspend()` for backgrounding, scene/match changes, death/respawn, or detachment, and activate again only once current data is ready.
 
 The controller rechecks settings after host capture. Disabling during capture suppresses the pending write. A failed host apply clears state. The host is weakly held; releasing it suspends processing. Nothing starts running merely by importing the library.
 
-Free Fire coordinate conventions, game object access, bone names/indices, camera setters, and lifecycle callbacks are not present in this repository. The interface above is a contract for implementing that connection, not evidence that it already exists.
+The native adapter resolves named player/bone/camera methods, reads transforms, and invokes aim rotation. Its overlay uses a display-link callback and pauses while the menu is open or the app is inactive. Real gameplay must verify coordinate behavior, invocation semantics, visibility, and ordering relative to the game's own updates. Static recovery of methods does not prove these runtime assumptions.
 
 ## Local validation
 

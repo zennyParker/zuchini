@@ -4,7 +4,7 @@ Read [project.md](project.md) first. It defines the iOS Aimbot-only menu, the ow
 
 The repository now also contains an [experimental game-loaded adapter](Native/README.md) and a local game-IPA packager. Device gameplay is not verified.
 
-The source retains a **standalone native menu validation harness**, with automatic opening and no key prompt. It has an Aimbot enable/disable checkbox, Head/Neck dropdown, and FOV slider in a dark/orange panel based on the supplied references. Speed has been removed. The new aiming engine consumes these settings and computes target directions from supplied snapshots, but **Free Fire is not connected**. See [the engine and integration documentation](docs/AIMING.md). The required final deliverable is a working game integration, not this harness.
+The menu has an Aimbot enable/disable checkbox, Head/Neck dropdown, and FOV slider in a dark/orange panel based on the supplied references. Speed has been removed. The aiming engine consumes these settings; the experimental native adapter supplies game state and applies aim rotation through recovered runtime methods. A separate **standalone native menu validation harness** remains for UI checks. See [the engine documentation](docs/AIMING.md) and [game adapter instructions](Native/README.md). Compilation does not establish working gameplay.
 
 The product name is Zucchini. Swift modules, the Xcode scheme, and artifact names retain `Zuchini` for compatibility.
 
@@ -13,16 +13,20 @@ The product name is Zucchini. Swift modules, the Xcode scheme, and artifact name
 - `Sources/ZuchiniCore`: validated controls, session state, and `AimbotMenu.definition()`.
 - `Sources/ZuchiniMenu`: SwiftUI panel, overlay, theme, store, and UIKit adapter.
 - `Examples/ZuchiniDemo`: standalone iOS app and checked-in Xcode project.
+- `Native`: experimental game-loaded runtime and diagnostic export.
+- `scripts/package-game.py`: local packaging of the supplied game with the new runtime.
 - `Tests/ZuchiniCoreTests`: state, bounds, schema, and target-choice validation.
 - `docs/VALIDATION.md`: results and device checklist.
 
-Game archives and extracted binaries live outside this source repository and are not build dependencies. The old IPA's key layer has not been changed. This source contains no authentication or licensing layer.
+Game archives and extracted binaries live outside this source repository and are not CI build dependencies. Local packaging replaces the original menu library with this project's code, which contains no authentication or licensing layer. Startup without the old prompt still requires a device test.
 
 ## Build on GitHub from Windows
 
 The **Validate source** workflow runs on pushes, pull requests, and manual dispatch. It uses a macOS runner with Xcode to run core tests, compile simulator and unsigned iPhone builds, and launch the simulator app for a screenshot. No local Mac is required for this workflow.
 
-Download the **ZuchiniDemo-builds** artifact from the relevant Actions run. It contains:
+Download **Zucchini-game-runtime** from the relevant Actions run and follow [local game packaging](Native/README.md#build-and-package) to make the experimental game IPA. Keep the bundle identifier `com.dts.freefireth` when signing; the adapter checks it.
+
+The separate **ZuchiniDemo-builds** artifact contains:
 
 - `ZuchiniDemo-unsigned.ipa`: standalone iPhone preview, requiring signing/provisioning.
 - `ZuchiniDemo-simulator.zip`: simulator app.
@@ -73,4 +77,4 @@ store.present()
 
 Wrap host content in `ZuchiniOverlay(store: store) { MyAppContent() }`, or use `ZuchiniUIKit.makeViewController(store: store)` from UIKit. Host callbacks are synchronous and must stay brief. Dropdown values are `.choice("Head")` and `.choice("Neck")`; the remaining IDs and defaults are documented in `project.md`.
 
-Target selection and smooth aim-direction calculation now exist in `AimingEngine`, with a main-actor `AimingController` bridge. The `Native` candidate now implements named-runtime access to Free Fire player/bone/camera state and aim rotation, plus loading through the supplied menu slot. This has only been statically inspected and compiled; device execution remains required. Detection evasion is not implemented. Integration source or an internal test-build API is needed for the next stage. A compiled preview is not evidence of functioning gameplay or undetectability.
+Target selection and smooth aim-direction calculation exist in `AimingEngine`, with a main-actor `AimingController` bridge. The `Native` candidate implements named-runtime access to Free Fire player/bone/camera state and aim rotation, plus loading through the supplied menu slot. This has only been statically inspected and compiled; the next stage is installation and gameplay testing on the intended iPhone. Detection evasion is not implemented. A compiled preview is not evidence of functioning gameplay or undetectability.
