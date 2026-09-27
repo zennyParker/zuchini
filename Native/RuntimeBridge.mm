@@ -280,9 +280,9 @@ constexpr uint8_t expectedUUID[16]={0xc8,0xde,0x73,0x71,0xcb,0xa7,0x3e,0x7a,0x9e
         Vec3 point=headTarget?candidate.head:candidate.neck;
         double dx=point.x-origin.x,dy=point.y-origin.y,dz=point.z-origin.z;
         double length=sqrt(dx*dx+dy*dy+dz*dz),fl=sqrt(forward.x*forward.x+forward.y*forward.y+forward.z*forward.z);
-        if (!(length>1e-6 && fl>1e-6)) continue;
+        if (!(length>1e-6 && fl>1e-6) || !std::isfinite(length) || !std::isfinite(fl)) continue;
         candidate.angle=acos(std::clamp((dx*forward.x+dy*forward.y+dz*forward.z)/(length*fl),-1.0,1.0));
-        if (candidate.angle>fov*M_PI/360) continue;
+        if (!std::isfinite(candidate.angle) || candidate.angle>fov*M_PI/360) continue;
         P id=[self call:instanceMethod object:player arguments:nullptr]; if (!id || fault) break;
         memcpy(&candidate.id,api.object_unbox(id),sizeof(int32_t));
         candidates.push_back(candidate);
@@ -316,9 +316,11 @@ constexpr uint8_t expectedUUID[16]={0xc8,0xde,0x73,0x71,0xcb,0xa7,0x3e,0x7a,0x9e
     if ([self boolean:deadMethod object:local arguments:nullptr fallback:YES] || fault) return NO;
     double length=sqrt(x*x+y*y+z*z); if (!std::isfinite(length)||length<1e-8) return NO;
     Vec3 direction={(float)(x/length),(float)(y/length),(float)(z/length)}, up={0,1,0};
+    if (fabsf(direction.y)>0.999f) up={0,0,1};
     P args[]={&direction,&up}; P boxed=[self call:lookMethod object:nullptr arguments:args];
     if (!boxed || fault) return NO;
     Quaternion rotation; memcpy(&rotation,api.object_unbox(boxed),sizeof(rotation));
+    if (!std::isfinite(rotation.x)||!std::isfinite(rotation.y)||!std::isfinite(rotation.z)||!std::isfinite(rotation.w)) return NO;
     bool apply=true; P aimArgs[]={&rotation,&apply};
     [self call:setAimMethod object:local arguments:aimArgs];
     if (fault) return NO;
