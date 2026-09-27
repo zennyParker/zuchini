@@ -1,6 +1,6 @@
 # Architecture
 
-`ZuchiniCore` owns immutable configuration and session values. IDs are unique, slider values are bounded and normalized, and choice values must belong to a validated set. `AimbotMenu.definition()` declares the one-section product menu: enabled, target, FOV, speed. It does not implement aiming.
+`ZuchiniCore` owns immutable configuration and session values. IDs are unique, slider values are bounded and normalized, and choice values must belong to a validated set. `AimbotMenu.definition()` declares the one-section product menu: enabled, target, FOV. It does not implement aiming.
 
 `ZuchiniMenu` owns main-actor UI state and views. Public entry points are `MenuStore`, `MenuTheme`, `ZuchiniOverlay`, `ZuchiniPanel`, and `ZuchiniUIKit`. Each host/scene retains its own store. The overlay stays in the host view hierarchy; it creates no additional window. The UIKit adapter uses a standard hosting controller.
 

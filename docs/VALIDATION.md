@@ -1,8 +1,14 @@
 # Validation
 
-## Aimbot menu revision - 2026-09-27
+## Three-control scope revision - 2026-09-27
 
-The source now contains the reference-inspired dark/orange panel with Aimbot, Head/Neck, FOV, and Speed controls. The app opens the panel on initial appearance without a key prompt. Its preview screen explicitly identifies the missing game connection.
+Removed Speed from the menu and the validation harness. Current controls are Aimbot enable/disable, Head/Neck, and FOV only. Updated the existing core test to exercise both FOV bounds and turning Aimbot off. All 10 core tests passed locally on Windows with zero failures; the project-structure and diff checks also passed. Apple build validation for this revision is pending.
+
+End-to-end game tests remain blocked on the missing integration source/API. No local Free Fire gameplay test has been run; a Windows Swift test cannot run the iOS game. The standalone harness is not the requested final product.
+
+## Previous four-control menu revision - 2026-09-27
+
+This earlier revision contained the reference-inspired dark/orange panel with Aimbot, Head/Neck, FOV, and Speed controls. The app opened the panel on initial appearance without a key prompt. Its preview screen explicitly identified the missing game connection. The results below describe that earlier revision.
 
 - Project-structure validation passed on Windows.
 - All 10 portable core tests passed on Windows (Swift 6.4.0), with zero failures.
@@ -28,7 +34,7 @@ Windows tests exclude SwiftUI/UIKit. The GitHub workflow additionally compiles b
 - Cold-launch: panel opens without key/auth prompts.
 - Toggle Aimbot; close/reopen; confirm the preview shows the retained state.
 - Expand Target: exactly Head and Neck, one selected; choosing either updates state and collapses options.
-- Check FOV bounds 1-180/default 60 and Speed bounds 0.05-1.00/default 1.00.
+- Check FOV bounds 1-180/default 60 and confirm no Speed control is present.
 - Portrait/landscape and larger Dynamic Type: all controls remain reachable by scrolling, and close stays visible.
 - Close, outside tap, and crosshair reopening work repeatedly; background content receives taps only when uncovered.
 - VoiceOver identifies controls and selection; background content is hidden from accessibility while open.

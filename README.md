@@ -2,7 +2,7 @@
 
 Read [project.md](project.md) first. It defines the iOS Aimbot-only menu, the owner's testing-team context, and what remains before a working Free Fire integration exists.
 
-The current deliverable is a **standalone native menu preview**, with automatic opening and no key prompt. It has an Aimbot checkbox, Head/Neck dropdown, FOV slider, and Speed slider in a dark/orange panel based on the supplied references. These controls update session state; **game targeting is not connected**.
+The current source includes a **standalone native menu validation harness**, with automatic opening and no key prompt. It has an Aimbot enable/disable checkbox, Head/Neck dropdown, and FOV slider in a dark/orange panel based on the supplied references. Speed has been removed. These controls update session state; **game targeting is not connected**. The required final deliverable is a working game integration, not this harness.
 
 The product name is Zucchini. Swift modules, the Xcode scheme, and artifact names retain `Zuchini` for compatibility.
 

@@ -6,7 +6,7 @@ This is the source of truth for contributors and AI agents. Read it before chang
 
 Build an iOS, IPA-delivered mod menu with **one gameplay feature: Aimbot**. The project owner describes this as a Free Fire internal testing project for a team of **10 people** as of 2026-09-27, including a member who joined the previous day. This team affiliation and authorization are owner-provided context, not independently verified by this repository.
 
-The owner wants to evaluate anti-cheat detection during controlled testing and described the desired result as "undetectable." That is a research objective, not a guarantee or a verified property. No detection-evasion implementation or detection test result currently exists here. Record the exact game version, environment, and observations for any future test; do not call this build undetectable.
+The owner's revised priority is a working end-to-end integration first, acknowledging that anti-cheat detection changes over time. Undetectability is not an acceptance criterion or a promised property. No detection-evasion implementation or detection test result currently exists here. Record the exact game version, environment, and observations for any future test.
 
 ## Required product behavior
 
@@ -15,7 +15,7 @@ The owner wants to evaluate anti-cheat detection during controlled testing and d
 - A single Aimbot enable/disable control, initially off.
 - A Target dropdown containing **Head** and **Neck** only, initially Neck. No Randomized or Chest options.
 - FOV slider, initially 60; current UI range 1-180 in steps of 1. This is a provisional UI range; its game-space meaning must be agreed with the host integration.
-- Speed slider, initially 1.00; current UI range 0.05-1.00 in steps of 0.05. Mapping to targeting movement is not implemented.
+- No Speed control. The requested controls are exactly Aimbot enable/disable, Head/Neck target selection, and FOV.
 - No Visuals, Misc, Settings, Account, Auto Fire, method selector, trigger selector, or additional gameplay features.
 - Session-only values; backgrounding closes the panel and retains values while the process lives. Relaunch resets defaults and opens the panel again.
 
@@ -31,7 +31,7 @@ The three screenshots supplied by the owner are visual references: near-black pa
 
 The workspace also contains a supplied game ZIP and extracted `FreeFire.app`, including a `monite.zip`. Its 3,470 archive paths were inspected: no Swift, Objective-C, C/C++, headers, or Xcode project source was found. Compiled archives are not equivalent to editable integration source. They are outside Git and outside the build inputs. The old IPA's reported key prompt has not been removed or tested; the new standalone menu has no such prompt.
 
-Before implementing actual gameplay behavior, obtain the mentioned integration source or an internal test-build API: the host startup entry point, target data and head/neck transforms, camera/aim interface, FOV units, speed semantics, and exact supported game build. Do not invent offsets or claim controls affect gameplay when only UI state changes.
+Before implementing actual gameplay behavior, obtain the mentioned integration source or an internal test-build API: the host startup entry point, target data and head/neck transforms, camera/aim interface, FOV units, and exact supported game build. Do not invent offsets or claim controls affect gameplay when only UI state changes. The owner explicitly rejected a standalone preview as the final deliverable; retain it only as an existing UI validation harness.
 
 ## Build and delivery
 
@@ -47,6 +47,8 @@ Before implementing actual gameplay behavior, obtain the mentioned integration s
 
 Run `scripts/test-windows.ps1` for portable state tests and `python scripts/validate_structure.py` for project consistency. SwiftUI/UIKit are excluded on Windows, so the macOS simulator/device builds must also pass. Check `docs/VALIDATION.md` for measured results and remaining work.
 
-On iPhone: confirm cold-launch presentation without a key prompt; checkbox behavior; exactly Head/Neck choices; dropdown closure after selection; FOV/speed bounds; scrolling in landscape and large text; close/reopen; outside-tap dismissal; VoiceOver; background/foreground; and a 30-minute stability session. Device execution and gameplay/anti-cheat results must be reported separately from compiler success.
+On iPhone: confirm cold-launch presentation without a key prompt; checkbox behavior; exactly Head/Neck choices; dropdown closure after selection; FOV bounds; scrolling in landscape and large text; close/reopen; outside-tap dismissal; VoiceOver; background/foreground; and a 30-minute stability session. Device execution and gameplay/anti-cheat results must be reported separately from compiler success.
+
+End-to-end acceptance additionally requires demonstrated head/neck aiming on the intended game build, FOV exclusion, immediate cessation of aim writes when disabled, and safe handling of no target, target loss, respawn, and scene changes. Test these against real game state; UI events alone do not prove them.
 
 The complete product additionally requires the missing game integration and verified targeting on the intended internal test build. A successful standalone menu build does not satisfy that requirement.

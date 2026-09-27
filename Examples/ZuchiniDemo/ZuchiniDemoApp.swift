@@ -43,7 +43,6 @@ private struct DemoRoot: View {
                         VStack(spacing: 8) {
                             Text(store.toggleValue(for: "aimbot.enabled") ? "Aimbot control: on" : "Aimbot control: off")
                             Text("\(store.choiceValue(for: "aimbot.target"))  /  FOV \(Int(store.numberValue(for: "aimbot.fov")))")
-                            Text("Speed \(store.numberValue(for: "aimbot.speed"), specifier: "%.2f")")
                         }
                         .font(.subheadline.monospaced()).foregroundStyle(.orange)
                         Text("Standalone UI build. Game targeting is not connected.")
