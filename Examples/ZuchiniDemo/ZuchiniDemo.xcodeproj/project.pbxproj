@@ -74,6 +74,7 @@
 			"isa" = "PBXGroup";
 			"children" = (
 				"A8792157CB4F27FB949C035F",
+				"93E46A602338E07A8524AEF6",
 			);
 			"name" = "Products";
 			"sourceTree" = "<group>";
@@ -83,6 +84,7 @@
 			"children" = (
 				"41CF6794BA4200B839C53531",
 				"B9E7F2871A3402983868AFC8",
+				"09C237CC57C9FB3DB9E30078",
 			);
 			"sourceTree" = "<group>";
 		};
@@ -208,6 +210,11 @@
 			"attributes" = {
 				"LastUpgradeCheck" = "1500";
 				"BuildIndependentTargetsInParallel" = "YES";
+				"TargetAttributes" = {
+					"4EA0BBFB4641B4E941FBF077" = {
+						"TestTargetID" = "C1E9827DB735CA9BAA54A540";
+					};
+				};
 			};
 			"buildConfigurationList" = "7ED5184A5487DF185E3420D0";
 			"compatibilityVersion" = "Xcode 14.0";
@@ -226,7 +233,97 @@
 			"projectRoot" = "";
 			"targets" = (
 				"C1E9827DB735CA9BAA54A540",
+				"4EA0BBFB4641B4E941FBF077",
 			);
+		};
+		"09C237CC57C9FB3DB9E30078" = {
+			"isa" = "PBXFileReference";
+			"lastKnownFileType" = "sourcecode.swift";
+			"path" = "ZuchiniUITests.swift";
+			"sourceTree" = "<group>";
+		};
+		"93E46A602338E07A8524AEF6" = {
+			"isa" = "PBXFileReference";
+			"explicitFileType" = "wrapper.cfbundle";
+			"includeInIndex" = "0";
+			"path" = "ZuchiniUITests.xctest";
+			"sourceTree" = "BUILT_PRODUCTS_DIR";
+		};
+		"0B462203F23B0289AC2C7E89" = {
+			"isa" = "PBXBuildFile";
+			"fileRef" = "09C237CC57C9FB3DB9E30078";
+		};
+		"B7D437BD7A053A90C50BE2BE" = {
+			"isa" = "PBXSourcesBuildPhase";
+			"buildActionMask" = "2147483647";
+			"files" = (
+				"0B462203F23B0289AC2C7E89",
+			);
+			"runOnlyForDeploymentPostprocessing" = "0";
+		};
+		"529836CB67897D5EB3992509" = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Debug";
+			"buildSettings" = {
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.example.zuchini.uitests";
+				"PRODUCT_NAME" = "$(TARGET_NAME)";
+				"TEST_TARGET_NAME" = "ZuchiniDemo";
+				"TARGETED_DEVICE_FAMILY" = "1,2";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"SWIFT_VERSION" = "5.0";
+			};
+		};
+		"C47A50CDFED4402F09C67EE8" = {
+			"isa" = "XCBuildConfiguration";
+			"name" = "Release";
+			"buildSettings" = {
+				"GENERATE_INFOPLIST_FILE" = "YES";
+				"PRODUCT_BUNDLE_IDENTIFIER" = "com.example.zuchini.uitests";
+				"PRODUCT_NAME" = "$(TARGET_NAME)";
+				"TEST_TARGET_NAME" = "ZuchiniDemo";
+				"TARGETED_DEVICE_FAMILY" = "1,2";
+				"CODE_SIGN_STYLE" = "Automatic";
+				"SWIFT_VERSION" = "5.0";
+			};
+		};
+		"512FEAD05B4138AAAA4858C1" = {
+			"isa" = "XCConfigurationList";
+			"buildConfigurations" = (
+				"529836CB67897D5EB3992509",
+				"C47A50CDFED4402F09C67EE8",
+			);
+			"defaultConfigurationIsVisible" = "0";
+			"defaultConfigurationName" = "Release";
+		};
+		"F6301EAD2AC55A883FB1AF3A" = {
+			"isa" = "PBXContainerItemProxy";
+			"containerPortal" = "244210E48437B6556980A702";
+			"proxyType" = "1";
+			"remoteGlobalIDString" = "C1E9827DB735CA9BAA54A540";
+			"remoteInfo" = "ZuchiniDemo";
+		};
+		"8DA290C1E75835394B937A40" = {
+			"isa" = "PBXTargetDependency";
+			"target" = "C1E9827DB735CA9BAA54A540";
+			"targetProxy" = "F6301EAD2AC55A883FB1AF3A";
+		};
+		"4EA0BBFB4641B4E941FBF077" = {
+			"isa" = "PBXNativeTarget";
+			"buildConfigurationList" = "512FEAD05B4138AAAA4858C1";
+			"buildPhases" = (
+				"B7D437BD7A053A90C50BE2BE",
+			);
+			"buildRules" = (
+
+			);
+			"dependencies" = (
+				"8DA290C1E75835394B937A40",
+			);
+			"name" = "ZuchiniUITests";
+			"productName" = "ZuchiniUITests";
+			"productReference" = "93E46A602338E07A8524AEF6";
+			"productType" = "com.apple.product-type.bundle.ui-testing";
 		};
 	};
 	"rootObject" = "244210E48437B6556980A702";

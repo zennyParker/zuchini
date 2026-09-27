@@ -10,7 +10,7 @@ The owner's revised priority is a working end-to-end integration first, acknowle
 
 ## Required product behavior
 
-- Open the menu automatically on initial app launch. Closing it leaves a small crosshair launcher for reopening.
+- Open the menu automatically on initial app launch. Closing it leaves a draggable 44-point crosshair launcher for reopening. Keep it within safe-area bounds, retain its relative position during the session and across rotation, and move the native touch region with it.
 - No key prompt, login, license server, activation step, account screen, or device allowlist in the new menu. "Global" means the menu itself has no access gate; Apple installation signing remains separate.
 - A single Aimbot enable/disable control, initially off.
 - A Target dropdown containing **Head** and **Neck** only, initially Neck. No Randomized or Chest options.
@@ -22,7 +22,7 @@ The owner's revised priority is a working end-to-end integration first, acknowle
 
 ## Visual direction
 
-The three screenshots supplied by the owner are visual references: near-black panel, charcoal rounded control rows, orange crosshair/header/checkmark/slider accents, light text, a Head/Neck dropdown with orange selection, and a close button. The implemented single-feature layout omits the unrelated sidebar tabs and moon button. Its header stays visible while controls scroll on short landscape screens. The reference game's background art and logos are not packaged in the standalone demo.
+The three screenshots supplied by the owner are visual references: near-black panel, charcoal rounded control rows, orange crosshair/header/checkmark/slider accents, light text, a Head/Neck dropdown with orange selection, and a close button. The implemented single-feature layout omits the unrelated sidebar tabs and moon button. The compact panel is at most 400 points wide and 360 points high, uses smaller text/spacing, and retains 44-point interactive rows. Its header stays visible while controls scroll on short landscape screens. The reference game's background art and logos are not packaged in the standalone demo.
 
 ## What exists and what does not
 

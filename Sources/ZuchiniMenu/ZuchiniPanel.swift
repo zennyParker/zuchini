@@ -19,17 +19,17 @@ public struct ZuchiniPanel: View {
             header
             Rectangle().fill(theme.text.opacity(0.07)).frame(height: 1)
             ScrollView {
-                VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 12) {
                     if !store.definition.subtitle.isEmpty {
                         Text(store.definition.subtitle)
-                            .font(.subheadline).foregroundStyle(theme.secondaryText)
+                            .font(.footnote).foregroundStyle(theme.secondaryText)
                     }
                     if store.definition.sections.count > 1 { sectionPicker }
                     if let section = store.definition.sections.first(where: { $0.id == store.selectedSectionID }) {
                         ForEach(section.controls) { control in controlView(control) }
                     }
                 }
-                .padding(20)
+                .padding(14)
             }
         }
         .background(theme.surface)
@@ -41,6 +41,8 @@ public struct ZuchiniPanel: View {
         }
         .shadow(color: .black.opacity(0.4), radius: 30, y: 12)
         .foregroundStyle(theme.text)
+        .font(.subheadline)
+        .accessibilityIdentifier("zuchini.panel")
         .tint(theme.accent)
         .environment(\.colorScheme, .dark)
         .accessibilityElement(children: .contain)
@@ -50,11 +52,11 @@ public struct ZuchiniPanel: View {
 
     private var header: some View {
         HStack(spacing: 12) {
-            Image(systemName: "scope").font(.title2)
-            Text(store.definition.title).font(.title3.weight(.medium))
+            Image(systemName: "scope").font(.system(size: 18))
+            Text(store.definition.title).font(.headline.weight(.medium))
             Spacer(minLength: 0)
             Button { store.dismiss() } label: {
-                Image(systemName: "xmark").font(.title2.weight(.regular))
+                Image(systemName: "xmark").font(.system(size: 18, weight: .regular))
                     .frame(width: 44, height: 44)
             }
             .buttonStyle(.plain)
@@ -62,7 +64,7 @@ public struct ZuchiniPanel: View {
             .accessibilityIdentifier("zuchini.close")
         }
         .foregroundStyle(theme.accent)
-        .padding(.leading, 22).padding(.trailing, 10).padding(.vertical, 10)
+        .padding(.leading, 16).padding(.trailing, 6).padding(.vertical, 4)
     }
 
     private var sectionPicker: some View {
@@ -92,7 +94,7 @@ public struct ZuchiniPanel: View {
                 set: { store.set(.toggle($0), for: control.id) }
             )) { controlLabel(control) }
             .toggleStyle(CheckToggleStyle(accent: theme.accent, surface: theme.surface))
-            .padding(16).background(card, in: RoundedRectangle(cornerRadius: 12))
+            .padding(10).background(card, in: RoundedRectangle(cornerRadius: 12))
             .accessibilityIdentifier("zuchini.control.\(control.id)")
         case let .choice(options, _):
             VStack(alignment: .leading, spacing: 10) {
@@ -106,7 +108,7 @@ public struct ZuchiniPanel: View {
                         Image(systemName: expandedChoiceID == control.id ? "chevron.up" : "chevron.down")
                             .foregroundStyle(theme.accent).font(.subheadline)
                     }
-                    .padding(18).frame(minHeight: 60)
+                    .padding(.horizontal, 12).frame(minHeight: 44)
                     .background(card, in: RoundedRectangle(cornerRadius: 12))
                 }
                 .buttonStyle(.plain)
@@ -128,7 +130,7 @@ public struct ZuchiniPanel: View {
                                     if selected { Image(systemName: "checkmark") }
                                 }
                                 .foregroundStyle(selected ? theme.accent : theme.text)
-                                .padding(16).frame(minHeight: 52)
+                                .padding(.horizontal, 12).frame(minHeight: 44)
                                 .background(selected ? theme.accent.opacity(0.15) : Color.clear,
                                             in: RoundedRectangle(cornerRadius: 10))
                                 .contentShape(Rectangle())
@@ -138,7 +140,7 @@ public struct ZuchiniPanel: View {
                             .accessibilityIdentifier("zuchini.option.\(control.id).\(option)")
                         }
                     }
-                    .padding(8).background(card, in: RoundedRectangle(cornerRadius: 12))
+                    .padding(6).background(card, in: RoundedRectangle(cornerRadius: 12))
                 }
             }
         case let .slider(range, step, _):
@@ -157,11 +159,11 @@ public struct ZuchiniPanel: View {
                 .accessibilityHint(control.detail)
                 .accessibilityIdentifier("zuchini.control.\(control.id)")
             }
-            .padding(18).background(card, in: RoundedRectangle(cornerRadius: 12))
+            .padding(12).background(card, in: RoundedRectangle(cornerRadius: 12))
         case .action:
             Button { store.perform(id: control.id) } label: {
                 controlLabel(control).frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
-                    .padding(16).background(card, in: RoundedRectangle(cornerRadius: 12))
+                    .padding(10).background(card, in: RoundedRectangle(cornerRadius: 12))
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("zuchini.control.\(control.id)")
@@ -170,7 +172,7 @@ public struct ZuchiniPanel: View {
 
     private func controlLabel(_ control: MenuControl) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(control.title).font(.body)
+            Text(control.title).font(.subheadline)
             if !control.detail.isEmpty {
                 Text(control.detail).font(.caption).foregroundStyle(theme.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
@@ -188,9 +190,9 @@ private struct CheckToggleStyle: ToggleStyle {
             HStack {
                 configuration.label
                 Spacer(minLength: 12)
-                RoundedRectangle(cornerRadius: 12)
+                RoundedRectangle(cornerRadius: 8)
                     .fill(configuration.isOn ? accent : surface)
-                    .frame(width: 40, height: 40)
+                    .frame(width: 28, height: 28)
                     .overlay {
                         if configuration.isOn {
                             Image(systemName: "checkmark").foregroundStyle(.white)

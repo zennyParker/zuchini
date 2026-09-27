@@ -65,6 +65,9 @@ jobs:
           sleep 5
           xcrun simctl io "$DEVICE_ID" screenshot build/ZuchiniDemo-launch.png
           xcrun simctl terminate "$DEVICE_ID" com.example.zuchini.demo
+          xcodebuild test -project Examples/ZuchiniDemo/ZuchiniDemo.xcodeproj -scheme ZuchiniDemo -destination "platform=iOS Simulator,id=$DEVICE_ID" -derivedDataPath DerivedData -resultBundlePath build/MenuUITests.xcresult CODE_SIGNING_ALLOWED=NO
+          xcrun simctl launch "$DEVICE_ID" com.example.zuchini.demo
+          xcrun simctl io "$DEVICE_ID" screenshot build/ZuchiniDemo-compact.png
       - name: Upload demo builds
         uses: actions/upload-artifact@v4
         with:
@@ -73,5 +76,7 @@ jobs:
             build/ZuchiniDemo-unsigned.ipa
             build/ZuchiniDemo-simulator.zip
             build/ZuchiniDemo-launch.png
+            build/ZuchiniDemo-compact.png
+            build/MenuUITests.xcresult
           if-no-files-found: error
           retention-days: 14

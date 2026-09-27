@@ -41,14 +41,13 @@ private final class GameHost: AimingHost {
 @MainActor
 private final class MenuWindow: UIWindow {
     weak var store: MenuStore?
+    var launcherFrame = CGRect.zero
     override func point(inside point: CGPoint, with event: UIEvent?) -> Bool {
         guard let store else { return false }
         if store.isPresented || rootViewController?.presentedViewController != nil {
             return super.point(inside: point, with: event)
         }
-        // Match ZuchiniOverlay's top-trailing 48-point launcher plus 12-point padding.
-        return CGRect(x: bounds.width - safeAreaInsets.right - 60,
-                      y: safeAreaInsets.top + 12, width: 48, height: 48).contains(point)
+        return launcherFrame.contains(point)
     }
 }
 
@@ -103,7 +102,9 @@ private final class InjectionCoordinator: NSObject {
         overlay.store = store
         overlay.backgroundColor = .clear
         overlay.windowLevel = .normal + 1
-        let view = ZuchiniOverlay(store: store) { Color.clear }
+        let view = ZuchiniOverlay(store: store, onLauncherFrameChange: { [weak overlay] frame in
+            overlay?.launcherFrame = frame
+        }) { Color.clear }
         let hosting = UIHostingController(rootView: view)
         hosting.view.backgroundColor = .clear
         overlay.rootViewController = hosting
@@ -174,7 +175,7 @@ private final class InjectionCoordinator: NSObject {
         guard let data = reportData(), let text = String(data: data, encoding: .utf8) else { return }
         let activity = UIActivityViewController(activityItems: [text], applicationActivities: nil)
         activity.popoverPresentationController?.sourceView = root.view
-        activity.popoverPresentationController?.sourceRect = CGRect(x: root.view.bounds.maxX - 60, y: root.view.safeAreaInsets.top + 12, width: 48, height: 48)
+        activity.popoverPresentationController?.sourceRect = window?.launcherFrame ?? .zero
         root.present(activity, animated: true)
     }
 }

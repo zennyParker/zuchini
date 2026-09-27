@@ -67,6 +67,26 @@ project_list = obj("project-config-list", "XCConfigurationList", buildConfigurat
 target_list = obj("target-config-list", "XCConfigurationList", buildConfigurations=target_configs, defaultConfigurationIsVisible="0", defaultConfigurationName="Release")
 target = obj("app-target", "PBXNativeTarget", buildConfigurationList=target_list, buildPhases=[sources, frameworks, resources], buildRules=[], dependencies=[], name="ZuchiniDemo", packageProductDependencies=dependencies, productName="ZuchiniDemo", productReference=product, productType="com.apple.product-type.application")
 project = obj("project", "PBXProject", attributes={"LastUpgradeCheck": "1500", "BuildIndependentTargetsInParallel": "YES"}, buildConfigurationList=project_list, compatibilityVersion="Xcode 14.0", developmentRegion="en", hasScannedForEncodings="0", knownRegions=["en", "Base"], mainGroup=group, packageReferences=[package], productRefGroup=products, projectDirPath="", projectRoot="", targets=[target])
+ui_source = obj("ui-source", "PBXFileReference", lastKnownFileType="sourcecode.swift", path="ZuchiniUITests.swift", sourceTree="<group>")
+ui_product = obj("ui-product", "PBXFileReference", explicitFileType="wrapper.cfbundle", includeInIndex="0", path="ZuchiniUITests.xctest", sourceTree="BUILT_PRODUCTS_DIR")
+ui_build = obj("ui-source-build", "PBXBuildFile", fileRef=ui_source)
+ui_sources = obj("ui-sources-phase", "PBXSourcesBuildPhase", buildActionMask="2147483647", files=[ui_build], runOnlyForDeploymentPostprocessing="0")
+ui_configs = []
+for mode in ["Debug", "Release"]:
+    ui_configs.append(obj(f"ui-{mode}", "XCBuildConfiguration", name=mode, buildSettings={
+        "GENERATE_INFOPLIST_FILE": "YES", "PRODUCT_BUNDLE_IDENTIFIER": "com.example.zuchini.uitests",
+        "PRODUCT_NAME": "$(TARGET_NAME)", "TEST_TARGET_NAME": "ZuchiniDemo", "TARGETED_DEVICE_FAMILY": "1,2",
+        "CODE_SIGN_STYLE": "Automatic", "SWIFT_VERSION": "5.0",
+    }))
+ui_list = obj("ui-config-list", "XCConfigurationList", buildConfigurations=ui_configs, defaultConfigurationIsVisible="0", defaultConfigurationName="Release")
+proxy = obj("ui-proxy", "PBXContainerItemProxy", containerPortal=project, proxyType="1", remoteGlobalIDString=target, remoteInfo="ZuchiniDemo")
+ui_dependency = obj("ui-dependency", "PBXTargetDependency", target=target, targetProxy=proxy)
+ui_target = obj("ui-target", "PBXNativeTarget", buildConfigurationList=ui_list, buildPhases=[ui_sources], buildRules=[], dependencies=[ui_dependency], name="ZuchiniUITests", productName="ZuchiniUITests", productReference=ui_product, productType="com.apple.product-type.bundle.ui-testing")
+objects[group]["children"].append(ui_source)
+objects[products]["children"].append(ui_product)
+objects[project]["targets"].append(ui_target)
+objects[project]["attributes"]["TargetAttributes"] = {ui_target: {"TestTargetID": target}}
+
 document = {"archiveVersion": "1", "classes": {}, "objectVersion": "56", "objects": objects, "rootObject": project}
 PROJECT.mkdir(parents=True, exist_ok=True)
 (PROJECT / "project.pbxproj").write_text("// !$*UTF8*$!\n" + encode(document) + "\n", encoding="utf-8")
@@ -78,7 +98,10 @@ entry = ET.SubElement(entries, "BuildActionEntry", buildForTesting="YES", buildF
 def reference(parent):
     ET.SubElement(parent, "BuildableReference", BuildableIdentifier="primary", BlueprintIdentifier=target, BuildableName="ZuchiniDemo.app", BlueprintName="ZuchiniDemo", ReferencedContainer="container:ZuchiniDemo.xcodeproj")
 reference(entry)
-ET.SubElement(scheme, "TestAction", buildConfiguration="Debug", selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB", selectedLauncherIdentifier="Xcode.IDEFoundation.Launcher.LLDB", shouldUseLaunchSchemeArgsEnv="YES")
+test_action = ET.SubElement(scheme, "TestAction", buildConfiguration="Debug", selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB", selectedLauncherIdentifier="Xcode.IDEFoundation.Launcher.LLDB", shouldUseLaunchSchemeArgsEnv="YES")
+testables = ET.SubElement(test_action, "Testables")
+testable = ET.SubElement(testables, "TestableReference", skipped="NO")
+ET.SubElement(testable, "BuildableReference", BuildableIdentifier="primary", BlueprintIdentifier=ui_target, BuildableName="ZuchiniUITests.xctest", BlueprintName="ZuchiniUITests", ReferencedContainer="container:ZuchiniDemo.xcodeproj")
 launch = ET.SubElement(scheme, "LaunchAction", buildConfiguration="Debug", selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB", selectedLauncherIdentifier="Xcode.IDEFoundation.Launcher.LLDB", launchStyle="0", useCustomWorkingDirectory="NO", ignoresPersistentStateOnLaunch="NO", debugDocumentVersioning="YES", debugServiceExtension="internal", allowLocationSimulation="YES")
 reference(ET.SubElement(launch, "BuildableProductRunnable", runnableDebuggingMode="0"))
 profile = ET.SubElement(scheme, "ProfileAction", buildConfiguration="Release", shouldUseLaunchSchemeArgsEnv="YES", savedToolIdentifier="", useCustomWorkingDirectory="NO", debugDocumentVersioning="YES")

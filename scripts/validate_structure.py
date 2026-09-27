@@ -75,9 +75,10 @@ for target in ["ZuchiniCore", "ZuchiniMenu"]:
     assert list((ROOT / "Sources" / target).glob("*.swift"))
 scheme = ET.parse(project / "xcshareddata/xcschemes/ZuchiniDemo.xcscheme")
 references = scheme.findall(".//BuildableReference")
-assert len(references) == 3
+assert len(references) == 4
 for ref in references:
     assert objects[ref.attrib["BlueprintIdentifier"]]["isa"] == "PBXNativeTarget"
-    assert ref.attrib["BuildableName"] == "ZuchiniDemo.app"
+    target = objects[ref.attrib["BlueprintIdentifier"]]
+    assert ref.attrib["BuildableName"] == objects[target["productReference"]]["path"]
 assert list((ROOT / "Tests/ZuchiniCoreTests").glob("*.swift"))
 print(json.dumps({"project_objects": len(objects), "source_file_references": len(source_refs), "scheme_references": len(references), "local_package_path_valid": True, "swift_compilation_performed": False}, indent=2))

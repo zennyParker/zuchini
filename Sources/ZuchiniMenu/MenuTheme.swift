@@ -13,7 +13,7 @@ public struct MenuTheme {
         surface: Color = Color(red: 0.043, green: 0.055, blue: 0.075),
         text: Color = .white,
         secondaryText: Color = Color(white: 0.74),
-        panelWidth: CGFloat = 560
+        panelWidth: CGFloat = 400
     ) {
         self.accent = accent
         self.surface = surface
