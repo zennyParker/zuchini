@@ -27,11 +27,11 @@ The three screenshots supplied by the owner are visual references: near-black pa
 
 `Sources/ZuchiniCore` contains validated controls, session state, and `AimingEngine`: target selection, FOV filtering, target retention, and smooth direction calculation. `Sources/ZuchiniMenu` contains the UI and `AimingController`, which connects menu settings to a host-supplied game interface. `Examples/ZuchiniDemo` remains a **standalone menu harness** and does not instantiate a Free Fire host. See `docs/AIMING.md` for the implemented behavior and connection contract.
 
-**This is not yet a functioning Free Fire aimbot or a modified Free Fire IPA.** Target selection and aim-direction math now exist and run against synthetic snapshots. There is still no Free Fire game-state reader, actual head/neck bone mapping, camera-write implementation, injector, or Free Fire host adapter. The existing repository is original menu source, not recovered MoNight/Monite source. The owner clarified that creating the missing logic is our task; no separate integration source has been supplied.
+**This is an experimental game-integration candidate, not a verified working release.** Target selection and aim-direction math now exist and run against synthetic snapshots. An experimental Free Fire 1.132.1 adapter now exists in `Native/`: it resolves the inspected runtime methods, reads player/head/neck/camera state, checks visibility, and invokes aim rotation. It has not been run on a physical iPhone; correct gameplay and stability are not established. The existing repository is original menu source, not recovered MoNight/Monite source. The owner clarified that creating the missing logic is our task; no separate integration source has been supplied.
 
-The workspace also contains a supplied game ZIP and extracted `FreeFire.app`, including a `monite.zip`. Its 3,470 archive paths were inspected: no Swift, Objective-C, C/C++, headers, or Xcode project source was found. Compiled archives are not equivalent to editable integration source. They are outside Git and outside the build inputs. The old IPA's reported key prompt has not been removed or tested; the new standalone menu has no such prompt.
+The workspace also contains a supplied game ZIP and extracted `FreeFire.app`, including a `monite.zip`. Its 3,470 archive paths were inspected: no Swift, Objective-C, C/C++, headers, or Xcode project source was found. Compiled archives are not equivalent to editable integration source. They are outside Git and outside the build inputs. The local packager replaces the original menu dylib with our own code, which has no key prompt. That replacement still needs an iPhone startup test.
 
-To connect the new engine to Free Fire, establish an actual game interface: the host startup entry point, target data and head/neck transforms, camera/aim interface, FOV units, and exact supported game build. Do not invent offsets or claim controls affect gameplay when only UI state changes. The owner explicitly rejected a standalone preview as the final deliverable; retain it only as an existing UI validation harness.
+The reverse-engineered adapter must be validated on device against the inspected interface: the host startup entry point, target data and head/neck transforms, camera/aim interface, FOV units, and exact supported game build. Do not invent offsets or claim controls affect gameplay when only UI state changes. The owner explicitly rejected a standalone preview as the final deliverable; retain it only as an existing UI validation harness.
 
 ## Build and delivery
 
@@ -40,7 +40,7 @@ To connect the new engine to Free Fire, establish an actual game interface: the 
 - `.github/workflows/validate.yml` builds with Xcode on a GitHub-hosted macOS runner, runs core tests, and packages simulator and unsigned iPhone artifacts.
 - The owner plans to sign/install on an available iPhone with ESign. The unsigned IPA still needs a suitable Apple certificate and provisioning profile; successful compilation does not establish installation compatibility.
 - Keep signing secrets, provisioning profiles, game archives, and extracted game binaries out of this public repository.
-- Artifact: `ZuchiniDemo-unsigned.ipa`. It currently installs a standalone preview, not a replacement Free Fire client.
+- Artifact `Zucchini-game-runtime` contains our new runtime dylib. `scripts/package-game.py` combines it locally with the exact supplied game ZIP into a new unsigned game IPA. The existing `ZuchiniDemo-unsigned.ipa` remains only the separate UI harness.
 - Apple signing reference: https://developer.apple.com/documentation/xcode/distributing-your-app-to-registered-devices
 
 ## Validation and completion criteria
@@ -51,4 +51,6 @@ On iPhone: confirm cold-launch presentation without a key prompt; checkbox behav
 
 End-to-end acceptance additionally requires demonstrated head/neck aiming on the intended game build, FOV exclusion, immediate cessation of aim writes when disabled, and safe handling of no target, target loss, respawn, and scene changes. Test these against real game state; UI events alone do not prove them.
 
-The complete product additionally requires the missing game integration and verified targeting on the intended internal test build. A successful standalone menu build does not satisfy that requirement.
+The complete product requires successful device installation/startup, verification of the experimental runtime calls and targeting, and correction of any failures on the intended test build. A successful standalone menu build does not satisfy that requirement.
+
+See `Native/README.md` for the reverse-engineering evidence, runtime limits, packaging command, and diagnostic export. Full game dumps and analysis copies remain outside Git. No anti-cheat modifications are implemented.

@@ -226,6 +226,7 @@ constexpr uint8_t expectedUUID[16]={0xc8,0xde,0x73,0x71,0xcb,0xa7,0x3e,0x7a,0x9e
 }
 - (NSDictionary*)captureTarget:(NSString*)target fov:(double)fov {
     NSAssert([NSThread isMainThread],@"Runtime capture must use main thread");
+    double sampleTime=CACurrentMediaTime();
     _reads++; fault=false; lastTargets.clear();
     if (![self initializeRuntime] || !std::isfinite(fov) || fov<1 || fov>180) return nil;
     P local=[self call:localMethod object:nullptr arguments:nullptr];
@@ -301,7 +302,7 @@ constexpr uint8_t expectedUUID[16]={0xc8,0xde,0x73,0x71,0xcb,0xa7,0x3e,0x7a,0x9e
         [output addObject:item];
     }
     if (fault) {lastTargets.clear(); return nil;}
-    selectedPoint=[target copy]; sequence++; capturedAt=CACurrentMediaTime();
+    selectedPoint=[target copy]; sequence++; capturedAt=sampleTime;
     _status=output.count?@"Targets available":@"No eligible visible target";
     return @{@"sequence":@(sequence),@"capturedAt":@(capturedAt),@"origin":array(origin),@"forward":array(forward),@"targets":output};
 }

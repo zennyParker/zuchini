@@ -12,6 +12,8 @@ jobs:
         run: xcodebuild -version && swift --version
       - name: Validate project structure
         run: python3 scripts/validate_structure.py
+      - name: Validate local game packager
+        run: python3 scripts/test_package_game.py
       - name: Test menu state and configuration
         run: swift test
       - name: Build the iOS simulator demo

@@ -91,8 +91,10 @@ def package(game, library, output):
         verify_input(archive)
         if hashlib.sha256(archive.read(LIBRARY)).digest() != hashlib.sha256(data).digest():
             raise ValueError('Packaged runtime differs from the build artifact')
+    with output.open('rb') as stream:
+        output_hash = hashlib.file_digest(stream, 'sha256').hexdigest()
     return {'output': str(output.resolve()), 'bytes': output.stat().st_size,
-            'sha256': hashlib.file_digest(output.open('rb'), 'sha256').hexdigest(),
+            'sha256': output_hash,
             'runtime_sha256': hashlib.sha256(data).hexdigest(),
             'game_binaries_preserved': True, 'minimum_ios': '16.0',
             'signed_for_device': False, 'device_gameplay_verified': False}

@@ -90,12 +90,15 @@ private final class InjectionCoordinator: NSObject {
     @objc private func attachWhenReady() {
         retries += 1
         if retries > 240 { startupTimer?.invalidate(); startupTimer = nil; writeReport(); return }
-        guard UIApplication.shared.applicationState == .active,
-              let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene })
-                .first(where: { $0.activationState == .foregroundActive }),
-              scene.windows.contains(where: { $0.isKeyWindow }) else { return }
+        guard UIApplication.shared.applicationState == .active else { return }
+        let scene = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene })
+            .first(where: { $0.activationState == .foregroundActive && $0.windows.contains(where: { $0.isKeyWindow }) })
+        // The supplied Unity app may still use an AppDelegate window without UIScene.
+        guard scene != nil || UIApplication.shared.windows.contains(where: { $0.isKeyWindow }) else { return }
         startupTimer?.invalidate(); startupTimer = nil
-        let overlay = MenuWindow(windowScene: scene)
+        let overlay: MenuWindow
+        if let scene { overlay = MenuWindow(windowScene: scene) }
+        else { overlay = MenuWindow(frame: UIScreen.main.bounds) }
         overlay.store = store
         overlay.backgroundColor = .clear
         overlay.windowLevel = .normal + 1
