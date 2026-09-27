@@ -24,7 +24,7 @@ GitHub's macOS workflow builds `Zucchini-game-runtime`, containing `Monite.dylib
 python scripts/package-game.py --game <supplied-archive.zip> --library <downloaded-Monite.dylib> --output <new-unsigned.ipa>
 ```
 
-The packager verifies the original main executable, Unity binary, and metadata hashes; preserves their bytes; replaces the menu library, adjusts Info.plist for iOS 16+ and local file sharing, and removes obsolete signature resource files/profiles for re-signing. It excludes the unused 498 MB nested `monite.zip` distribution. Required game configuration files remain. `Monite.dylib` is retained as a compatibility filename because the unchanged executable loads that path; its contents are our Zucchini code. The packager writes a new archive and validates all ZIP entries. Existing files are never overwritten.
+The packager verifies the original main executable, Unity binary, and metadata hashes; preserves their bytes; replaces the menu library, adjusts Info.plist for iOS 16+ and local file sharing, and removes obsolete signature resource files/profiles for re-signing. All bundled resources, including the 498 MB nested `monite.zip`, are retained and checked against the original with SHA-256. That archive's runtime role is unverified; the earlier assumption that it was unused was insufficient justification for removal. `Monite.dylib` remains as a compatibility filename because the unchanged executable loads that path; its contents are our Zucchini code. The packager writes a new archive and validates all ZIP entries and the expected file inventory. Existing files are never overwritten.
 
 ## Required iPhone validation
 

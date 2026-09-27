@@ -15,8 +15,8 @@ import zipfile
 PREFIX = 'Payload/FreeFire.app/'
 LIBRARY = PREFIX + 'Frameworks/Monite.dylib'
 # This is the game's existing loader name; its content is our Zucchini runtime.
-# The nested legacy distribution is unused by the new runtime and must not ship.
-LEGACY_FILES = frozenset({PREFIX + 'monite.zip'})
+# Preserve bundled resources, including monite.zip: lack of a static reference
+# does not prove a resource is unused during gameplay.
 UNITY = PREFIX + 'Frameworks/UnityFramework.framework/UnityFramework'
 EXPECTED = {
     PREFIX + 'FreeFire': 'aa6b7e5bf7b664f3a83436e7387ba2fa65931cd91d442aed54fdc787a52386a1',
@@ -77,7 +77,7 @@ def package(game, library, output):
         # Exclusive create prevents accidental replacement even if a concurrent process creates it.
         with output.open('xb') as destination, zipfile.ZipFile(destination, 'w', allowZip64=True) as result:
             for item in original.infolist():
-                if item.filename in LEGACY_FILES or '/_CodeSignature/' in item.filename or item.filename.endswith('/embedded.mobileprovision'):
+                if '/_CodeSignature/' in item.filename or item.filename.endswith('/embedded.mobileprovision'):
                     continue
                 entry = copy.copy(item)
                 if item.filename == LIBRARY:
@@ -92,16 +92,30 @@ def package(game, library, output):
         if bad:
             raise ValueError(f'Output ZIP integrity failure: {bad}')
         verify_input(archive)
-        if LEGACY_FILES.intersection(archive.namelist()):
-            raise ValueError('Output still contains an obsolete menu distribution')
         if hashlib.sha256(archive.read(LIBRARY)).digest() != hashlib.sha256(data).digest():
             raise ValueError('Packaged runtime differs from the build artifact')
+        preserved_files = 0
+        with zipfile.ZipFile(game) as original:
+            expected_names = set()
+            for item in original.infolist():
+                name = item.filename
+                if '/_CodeSignature/' in name or name.endswith('/embedded.mobileprovision'):
+                    continue
+                expected_names.add(name)
+                if name in {LIBRARY, PREFIX + 'Info.plist'} or item.is_dir():
+                    continue
+                with original.open(name) as before, archive.open(name) as after:
+                    if hashlib.file_digest(before, 'sha256').digest() != hashlib.file_digest(after, 'sha256').digest():
+                        raise ValueError(f'Bundled resource changed: {name}')
+                preserved_files += 1
+            if set(archive.namelist()) != expected_names:
+                raise ValueError('Packaged file inventory differs from expected input')
     with output.open('rb') as stream:
         output_hash = hashlib.file_digest(stream, 'sha256').hexdigest()
     return {'output': str(output.resolve()), 'bytes': output.stat().st_size,
             'sha256': output_hash,
             'runtime_sha256': hashlib.sha256(data).hexdigest(),
-            'excluded_legacy_files': sorted(LEGACY_FILES),
+            'preserved_resource_files_verified': preserved_files,
             'game_binaries_preserved': True, 'minimum_ios': '16.0',
             'signed_for_device': False, 'device_gameplay_verified': False}
 

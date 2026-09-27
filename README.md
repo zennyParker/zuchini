@@ -20,7 +20,7 @@ The product name is Zucchini. Swift modules, the Xcode scheme, and artifact name
 
 Game archives and extracted binaries live outside this source repository and are not CI build dependencies. Local packaging replaces the original menu library with this project's code, which contains no authentication or licensing layer. Startup without the old prompt still requires a device test.
 
-Packaging excludes the unused legacy `monite.zip` distribution. The remaining `Monite.dylib` filename is required by the game's loader and contains only our newly built Zucchini runtime. Do not delete it or the game's own configuration files as part of rebranding.
+Packaging preserves all bundled resources, including `monite.zip`, whose runtime role is unverified. An earlier removal of that archive was reversed; do not use the smaller `clean` IPA. The `Monite.dylib` filename is required by the game's loader and contains our newly built Zucchini runtime. Do not delete game resources or loader dependencies solely for rebranding.
 
 ## Build on GitHub from Windows
 

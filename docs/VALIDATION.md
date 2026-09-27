@@ -6,10 +6,18 @@ The repository now contains a game-loaded adapter for the supplied Free Fire 1.1
 
 The runtime includes automatic menu presentation, disabled-by-default aiming, Head/Neck selection, FOV, conservative physics visibility checks, lifecycle suppression, stale-frame rejection, and local diagnostic export. No extra gameplay controls were added. The local packager preserves the original main executable, Unity binary, and metadata byte-for-byte, replaces the menu library, adjusts Info.plist, and removes obsolete signature resource files for full re-signing.
 
-### Current cleaned package
+### Current resource-preserving package
 
-- Cleanup excludes the unused `Payload/FreeFire.app/monite.zip` distribution. The original game archive remains the packaging input; its extracted legacy archive/library copies and two superseded IPA builds were moved to the Recycle Bin, along with two obsolete runtime artifact folders.
-- Current package: `../builds/Zucchini-FreeFire-1.132.1-clean-unsigned.ipa`, **493,655,760 bytes**, down from 986,426,168. SHA-256: `31dbe6ab1b5a45831e5cbe3d1ac13a89d5d688d93bb70fb0f25545f0dcde8762`.
+- The earlier claim that `monite.zip` was unused was not established by device testing and has been withdrawn. The packager retains that archive again. Its compiled contents and the outer engine's pre-existing modifications are documented in [ARCHIVE-INSPECTION.md](ARCHIVE-INSPECTION.md).
+- Use `../builds/Zucchini-FreeFire-1.132.1-resources-restored-unsigned.ipa`, **986,426,168 bytes**. SHA-256: `973f4711611b4469addf20ed21f59d7976296e7414d809cb34fb4214bb3a4c0b`, identical to the earlier full-resource candidate.
+- All ZIP entries passed integrity checks. The expected file inventory matched. All **3,275 preserved resource files** were SHA-256 checked against the original input, including `monite.zip`; the library matches the Apple-built Zucchini runtime. Only the runtime library and Info.plist are replaced; obsolete signature resource files are omitted for re-signing.
+- All four updated local packaging tests, project-structure validation, and diff checks passed. No native code changed. Physical-device startup, gameplay, and compatibility with the supplied engine's legacy modifications remain unverified.
+- The smaller `clean` IPA is withdrawn. Its archive checks did not establish that removing bundled resources was safe.
+
+### Withdrawn cleanup package (historical)
+
+- This revision excluded `Payload/FreeFire.app/monite.zip` based on an unverified assumption that it was unused. The original game archive remained available; the extracted archive has since been restored for inspection.
+- Withdrawn package: `../builds/Zucchini-FreeFire-1.132.1-clean-unsigned.ipa`, **493,655,760 bytes**. SHA-256: `31dbe6ab1b5a45831e5cbe3d1ac13a89d5d688d93bb70fb0f25545f0dcde8762`.
 - All ZIP entry integrity checks passed; `monite.zip` is absent. Main executable, Unity binary, and metadata hashes still match the input. The Zucchini runtime hash is unchanged from the Apple-validated build below.
 - All four local packager tests pass, including exclusion of the legacy archive, preservation of required game configuration and input bytes, and rejection of wrong inputs. Project-structure and diff checks pass. No native code changed in this cleanup, so the existing Apple build evidence still applies to the runtime; game behavior after removing the archive needs device validation.
 - `Monite.dylib` remains as the loader-required compatibility filename for our runtime. Game/Unity configuration files remain; no obsolete Monite configuration is used by the new menu. The unchanged source archive retains the original materials for reproducible packaging.
