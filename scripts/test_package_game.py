@@ -41,6 +41,8 @@ class PackageGameTests(unittest.TestCase):
                 archive.writestr(module.LIBRARY,b'old menu')
                 archive.writestr(module.PREFIX+'Info.plist',plistlib.dumps(info))
                 archive.writestr(module.PREFIX+'_CodeSignature/CodeResources',b'old signature')
+                archive.writestr(module.PREFIX+'monite.zip',b'obsolete distribution')
+                archive.writestr(module.PREFIX+'Data/boot.config',b'required game configuration')
             before=game.read_bytes(); expected=module.EXPECTED
             try:
                 module.EXPECTED={fixture:hashlib.sha256(b'unchanged game payload').hexdigest()}
@@ -50,6 +52,9 @@ class PackageGameTests(unittest.TestCase):
                     self.assertEqual(archive.read(module.LIBRARY),library())
                     self.assertEqual(plistlib.loads(archive.read(module.PREFIX+'Info.plist'))['MinimumOSVersion'],'16.0')
                     self.assertNotIn(module.PREFIX+'_CodeSignature/CodeResources',archive.namelist())
+                    self.assertNotIn(module.PREFIX+'monite.zip',archive.namelist())
+                    self.assertEqual(archive.read(module.PREFIX+'Data/boot.config'),b'required game configuration')
+                self.assertEqual(report['excluded_legacy_files'],[module.PREFIX+'monite.zip'])
                 self.assertEqual(game.read_bytes(),before)
                 self.assertFalse(report['device_gameplay_verified'])
             finally: module.EXPECTED=expected

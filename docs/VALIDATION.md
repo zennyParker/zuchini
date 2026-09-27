@@ -6,14 +6,22 @@ The repository now contains a game-loaded adapter for the supplied Free Fire 1.1
 
 The runtime includes automatic menu presentation, disabled-by-default aiming, Head/Neck selection, FOV, conservative physics visibility checks, lifecycle suppression, stale-frame rejection, and local diagnostic export. No extra gameplay controls were added. The local packager preserves the original main executable, Unity binary, and metadata byte-for-byte, replaces the menu library, adjusts Info.plist, and removes obsolete signature resource files for full re-signing.
 
-### Verified build and package
+### Current cleaned package
+
+- Cleanup excludes the unused `Payload/FreeFire.app/monite.zip` distribution. The original game archive remains the packaging input; its extracted legacy archive/library copies and two superseded IPA builds were moved to the Recycle Bin, along with two obsolete runtime artifact folders.
+- Current package: `../builds/Zucchini-FreeFire-1.132.1-clean-unsigned.ipa`, **493,655,760 bytes**, down from 986,426,168. SHA-256: `31dbe6ab1b5a45831e5cbe3d1ac13a89d5d688d93bb70fb0f25545f0dcde8762`.
+- All ZIP entry integrity checks passed; `monite.zip` is absent. Main executable, Unity binary, and metadata hashes still match the input. The Zucchini runtime hash is unchanged from the Apple-validated build below.
+- All four local packager tests pass, including exclusion of the legacy archive, preservation of required game configuration and input bytes, and rejection of wrong inputs. Project-structure and diff checks pass. No native code changed in this cleanup, so the existing Apple build evidence still applies to the runtime; game behavior after removing the archive needs device validation.
+- `Monite.dylib` remains as the loader-required compatibility filename for our runtime. Game/Unity configuration files remain; no obsolete Monite configuration is used by the new menu. The unchanged source archive retains the original materials for reproducible packaging.
+
+### Verified runtime build and superseded package
 
 - Runtime source commit: `ec1fc25bed947aac02ff4af01b40ee4f83c695c2`.
 - [Apple CI run 36320643952](https://github.com/zennyParker/zuchini/actions/runs/36320643952) passed: all 29 Swift tests, four packaging tests, simulator/device harness builds, native runtime build, and simulator harness launch. These tests do not execute the game adapter against Free Fire.
 - Local Windows project-structure validation and all four packaging tests passed. The earlier 25 portable Swift tests passed locally; the final Apple run includes those tests and four Apple-only controller tests.
 - Downloaded runtime SHA-256: `129d7c0e87eb5303a20a06f95b277ea07135f7e76de7c81a33dd84b945df106a`, matching the CI artifact hash. Mach-O platform is iOS, minimum 16.0, SDK 17.5. An earlier linker SDK mismatch was corrected before this build. The remaining deprecated-window API warning relates to the legacy Unity window fallback.
-- Final local package: `../builds/Zucchini-FreeFire-1.132.1-ec1fc25-unsigned.ipa`, 986,426,168 bytes. All ZIP entries passed CRC validation, the three original game-binary hashes matched, and the packaged runtime matched the downloaded artifact.
-- Final IPA SHA-256: `973f4711611b4469addf20ed21f59d7976296e7414d809cb34fb4214bb3a4c0b`. The adjacent JSON manifest records these values. The original supplied archive was not modified. Earlier experimental packages are superseded.
+- Superseded local package: `Zucchini-FreeFire-1.132.1-ec1fc25-unsigned.ipa`, 986,426,168 bytes. All ZIP entries passed CRC validation, the three original game-binary hashes matched, and the packaged runtime matched the downloaded artifact. This older IPA was recycled after validating the cleaned package above.
+- Superseded IPA SHA-256: `973f4711611b4469addf20ed21f59d7976296e7414d809cb34fb4214bb3a4c0b`. The original supplied archive was not modified.
 - The IPA is not signed for device installation. Full ESign re-signing and physical-iPhone validation remain outstanding. No full game binary or analysis dump was uploaded to GitHub.
 
 **Physical-device installation, game startup, actual aim movement, wall checks, responsiveness, and long-session stability have not been verified.** The adapter's runtime invocation semantics and frame timing remain assumptions to check on device. Successful compiler tests and synthetic target tests do not establish these properties. No iPhone was available through the local device inventory during this run.
