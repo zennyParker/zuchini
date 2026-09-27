@@ -14,7 +14,7 @@ The owner's revised priority is a working end-to-end integration first, acknowle
 - No key prompt, login, license server, activation step, account screen, or device allowlist in the new menu. "Global" means the menu itself has no access gate; Apple installation signing remains separate.
 - A single Aimbot enable/disable control, initially off.
 - A Target dropdown containing **Head** and **Neck** only, initially Neck. No Randomized or Chest options.
-- FOV slider, initially 60; current UI range 1-180 in steps of 1. This is a provisional UI range; its game-space meaning must be agreed with the host integration.
+- FOV slider, initially 60; range 1-180 in steps of 1. The aiming engine uses a full angular cone: 60 accepts directions within 30 degrees of camera forward. The game adapter must map this explicitly.
 - No Speed control. The requested controls are exactly Aimbot enable/disable, Head/Neck target selection, and FOV.
 - No Visuals, Misc, Settings, Account, Auto Fire, method selector, trigger selector, or additional gameplay features.
 - Session-only values; backgrounding closes the panel and retains values while the process lives. Relaunch resets defaults and opens the panel again.
@@ -25,13 +25,13 @@ The three screenshots supplied by the owner are visual references: near-black pa
 
 ## What exists and what does not
 
-`Sources/ZuchiniCore` contains validated control definitions and session state, including the `AimbotMenu` configuration. `Sources/ZuchiniMenu` contains SwiftUI presentation and a UIKit adapter. `Examples/ZuchiniDemo` is a **standalone menu preview**. Its controls update local state and emit typed host events.
+`Sources/ZuchiniCore` contains validated controls, session state, and `AimingEngine`: target selection, FOV filtering, target retention, and smooth direction calculation. `Sources/ZuchiniMenu` contains the UI and `AimingController`, which connects menu settings to a host-supplied game interface. `Examples/ZuchiniDemo` remains a **standalone menu harness** and does not instantiate a Free Fire host. See `docs/AIMING.md` for the implemented behavior and connection contract.
 
-**This is not yet a functioning Free Fire aimbot or a modified Free Fire IPA.** There is no game-state reader, target acquisition, head/neck bone mapping, aiming implementation, injector, or Free Fire host adapter. The existing repository is original menu source, not recovered MoNight/Monite source. The owner mentioned integration source, but it has not been located in this source repository.
+**This is not yet a functioning Free Fire aimbot or a modified Free Fire IPA.** Target selection and aim-direction math now exist and run against synthetic snapshots. There is still no Free Fire game-state reader, actual head/neck bone mapping, camera-write implementation, injector, or Free Fire host adapter. The existing repository is original menu source, not recovered MoNight/Monite source. The owner clarified that creating the missing logic is our task; no separate integration source has been supplied.
 
 The workspace also contains a supplied game ZIP and extracted `FreeFire.app`, including a `monite.zip`. Its 3,470 archive paths were inspected: no Swift, Objective-C, C/C++, headers, or Xcode project source was found. Compiled archives are not equivalent to editable integration source. They are outside Git and outside the build inputs. The old IPA's reported key prompt has not been removed or tested; the new standalone menu has no such prompt.
 
-Before implementing actual gameplay behavior, obtain the mentioned integration source or an internal test-build API: the host startup entry point, target data and head/neck transforms, camera/aim interface, FOV units, and exact supported game build. Do not invent offsets or claim controls affect gameplay when only UI state changes. The owner explicitly rejected a standalone preview as the final deliverable; retain it only as an existing UI validation harness.
+To connect the new engine to Free Fire, establish an actual game interface: the host startup entry point, target data and head/neck transforms, camera/aim interface, FOV units, and exact supported game build. Do not invent offsets or claim controls affect gameplay when only UI state changes. The owner explicitly rejected a standalone preview as the final deliverable; retain it only as an existing UI validation harness.
 
 ## Build and delivery
 

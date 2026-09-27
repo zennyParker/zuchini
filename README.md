@@ -2,7 +2,7 @@
 
 Read [project.md](project.md) first. It defines the iOS Aimbot-only menu, the owner's testing-team context, and what remains before a working Free Fire integration exists.
 
-The current source includes a **standalone native menu validation harness**, with automatic opening and no key prompt. It has an Aimbot enable/disable checkbox, Head/Neck dropdown, and FOV slider in a dark/orange panel based on the supplied references. Speed has been removed. These controls update session state; **game targeting is not connected**. The required final deliverable is a working game integration, not this harness.
+The current source includes a **standalone native menu validation harness**, with automatic opening and no key prompt. It has an Aimbot enable/disable checkbox, Head/Neck dropdown, and FOV slider in a dark/orange panel based on the supplied references. Speed has been removed. The new aiming engine consumes these settings and computes target directions from supplied snapshots, but **Free Fire is not connected**. See [the engine and integration documentation](docs/AIMING.md). The required final deliverable is a working game integration, not this harness.
 
 The product name is Zucchini. Swift modules, the Xcode scheme, and artifact names retain `Zuchini` for compatibility.
 
@@ -71,4 +71,4 @@ store.present()
 
 Wrap host content in `ZuchiniOverlay(store: store) { MyAppContent() }`, or use `ZuchiniUIKit.makeViewController(store: store)` from UIKit. Host callbacks are synchronous and must stay brief. Dropdown values are `.choice("Head")` and `.choice("Neck")`; the remaining IDs and defaults are documented in `project.md`.
 
-No Free Fire host adapter, target acquisition, bone mapping, camera control, injector, or detection-evasion implementation exists here. Integration source or an internal test-build API is needed for the next stage. A compiled preview is not evidence of functioning gameplay or undetectability.
+Target selection and smooth aim-direction calculation now exist in `AimingEngine`, with a main-actor `AimingController` bridge. Free Fire data access, bone mapping, camera control, injection, and detection evasion remain unimplemented. Integration source or an internal test-build API is needed for the next stage. A compiled preview is not evidence of functioning gameplay or undetectability.

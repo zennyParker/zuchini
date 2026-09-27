@@ -1,5 +1,17 @@
 # Validation
 
+## Targeting engine revision - 2026-09-27
+
+Implemented portable target selection and smooth aim-direction calculation, plus a main-actor menu/host controller. This operates on supplied snapshots and does not yet access Free Fire. See `AIMING.md`.
+
+- All 25 portable tests pass locally on Windows, including 15 engine tests and the 10 existing menu/state tests.
+- The deterministic simulation processed 72,000 frames (ten simulated minutes at 120 Hz), including periodic target loss, with 66,000 commands and no invalid output. Maximum observed angular step was about 0.346 degrees in that trajectory. This was accelerated simulation, not a ten-minute device stability test.
+- Fixed-target tests cover 30/60/120 Hz, unit directions, bounded angular speed, no overshoot, and matching final directions.
+- Tests also cover FOV boundaries/live changes, both bones, disabling/re-enabling, hidden/dead/allied targets, missing/invalid points, duplicates, target retention/loss, stale/repeated/future frames, stalls, and reset.
+- Project structure and diff checks passed. The three Apple-only controller tests and Apple builds are pending for this revision.
+
+Game adapter implementation, actual iPhone behavior, gameplay correctness, and human-like perception remain unverified. No detection-evasion result is claimed.
+
 ## Three-control scope revision - 2026-09-27
 
 Removed Speed from the menu and the validation harness. Current controls are Aimbot enable/disable, Head/Neck, and FOV only. Updated the existing core test to exercise both FOV bounds and turning Aimbot off. All 10 core tests passed locally on Windows with zero failures; the project-structure and diff checks also passed. [Apple validation run 36317124773](https://github.com/zennyParker/zuchini/actions/runs/36317124773), for source commit `22450d47639bdda45633e0312057c19fdd677045`, was queued when this status was recorded; no Apple pass is claimed for this revision yet.

@@ -11,6 +11,6 @@ let package = Package(
     targets: [
         .target(name: "ZuchiniCore"),
         .target(name: "ZuchiniMenu", dependencies: ["ZuchiniCore"]),
-        .testTarget(name: "ZuchiniCoreTests", dependencies: ["ZuchiniCore"])
+        .testTarget(name: "ZuchiniCoreTests", dependencies: ["ZuchiniCore", "ZuchiniMenu"])
     ]
 )

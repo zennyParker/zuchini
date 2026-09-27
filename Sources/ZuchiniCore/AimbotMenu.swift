@@ -1,4 +1,4 @@
-/// The UI configuration only. A host must implement gameplay behavior separately.
+/// Menu configuration consumed by AimSettings. A game must supply the AimingHost adapter.
 public enum AimbotMenu {
     public static func definition() throws -> MenuDefinition {
         try MenuDefinition(title: "AIMBOT", sections: [
