@@ -1,5 +1,6 @@
 # Run the portable core tests using the installed Swift/Visual C++ toolchains.
 # SwiftUI/UIKit are unavailable on Windows and still require a macOS build.
+param([string]$ScratchPath = '')
 $ErrorActionPreference = 'Stop'
 $sourceRoot = Split-Path -Parent $PSScriptRoot
 $env:Path = [Environment]::GetEnvironmentVariable('Path', 'Machine') + ';' + [Environment]::GetEnvironmentVariable('Path', 'User')
@@ -29,7 +30,8 @@ Push-Location -LiteralPath $sourceRoot
 try {
     & swift --version
     if ($LASTEXITCODE -ne 0) { throw 'Swift compiler could not start.' }
-    & swift test
+    if ($ScratchPath) { & swift test --scratch-path $ScratchPath }
+    else { & swift test }
     if ($LASTEXITCODE -ne 0) { throw "Swift tests failed (exit $LASTEXITCODE)." }
 } finally {
     Pop-Location

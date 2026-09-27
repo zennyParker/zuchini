@@ -3,6 +3,7 @@ import Foundation
 public enum MenuValue: Equatable, Sendable {
     case toggle(Bool)
     case number(Double)
+    case choice(String)
 }
 
 /// Session-only state. This layer has no network, filesystem, or platform hooks.
@@ -29,6 +30,9 @@ public struct MenuState: Equatable, Sendable {
         case let (.slider(range, step, _), .number(number)):
             guard number.isFinite else { return false }
             next = .number(Self.normalized(number, range: range, step: step))
+        case let (.choice(options, _), .choice(selection)):
+            guard options.contains(selection) else { return false }
+            next = value
         default:
             return false
         }
@@ -45,6 +49,7 @@ public struct MenuState: Equatable, Sendable {
             case let .slider(range, step, value):
                 values[control.id] = .number(Self.normalized(value, range: range, step: step))
             case .action: break
+            case let .choice(_, value): values[control.id] = .choice(value)
             }
         }
     }

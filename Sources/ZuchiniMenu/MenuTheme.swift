@@ -9,11 +9,11 @@ public struct MenuTheme {
     public let panelWidth: CGFloat
 
     public init(
-        accent: Color = Color(red: 0.74, green: 0.94, blue: 0.34),
-        surface: Color = Color(red: 0.075, green: 0.09, blue: 0.08),
+        accent: Color = Color(red: 1, green: 0.29, blue: 0.035),
+        surface: Color = Color(red: 0.043, green: 0.055, blue: 0.075),
         text: Color = .white,
         secondaryText: Color = Color(white: 0.74),
-        panelWidth: CGFloat = 360
+        panelWidth: CGFloat = 560
     ) {
         self.accent = accent
         self.surface = surface

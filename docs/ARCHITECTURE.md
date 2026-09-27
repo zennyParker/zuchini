@@ -1,13 +1,13 @@
 # Architecture
 
-`ZuchiniCore` owns immutable configuration and value normalization. It uses Foundation only and can be tested without a device. All control IDs are unique across the menu, action controls carry no stored value, slider input is bounded, and each store has independent state.
+`ZuchiniCore` owns immutable configuration and session values. IDs are unique, slider values are bounded and normalized, and choice values must belong to a validated set. `AimbotMenu.definition()` declares the one-section product menu: enabled, target, FOV, speed. It does not implement aiming.
 
-`ZuchiniMenu` owns main-actor UI state and views. Its public entry points are `MenuStore`, `MenuTheme`, `ZuchiniOverlay`, `ZuchiniPanel`, and `ZuchiniUIKit`. The store has no global singleton and creates no worker threads. The overlay belongs to the hosting view hierarchy; it neither discovers unrelated windows nor changes their levels. The UIKit adapter presents a regular view controller.
+`ZuchiniMenu` owns main-actor UI state and views. Public entry points are `MenuStore`, `MenuTheme`, `ZuchiniOverlay`, `ZuchiniPanel`, and `ZuchiniUIKit`. Each host/scene retains its own store. The overlay stays in the host view hierarchy; it creates no additional window. The UIKit adapter uses a standard hosting controller.
 
-The app supplies configuration and responds to typed `MenuEvent` values. The library never assumes access to game state. The example's controls update only the example canvas. UI events are synchronous and should be fast; any future long-running host operation needs asynchronous scheduling, explicit cancellation, and a completion state rather than a main-thread wait.
+The panel uses an orange accent, dark control cards, a checkbox-style toggle, an inline expanding choice list, and native sliders. A fixed header keeps dismissal accessible while the body scrolls. No section navigation is rendered for the single-section Aimbot menu. Generic multi-section definitions remain supported.
 
-When a SwiftUI scene becomes inactive, the floating panel closes while its session values remain in memory. No background workload is started. The panel uses a short, user-triggered transition and respects Reduce Motion. There are no continuous animation loops or polling tasks.
+The demo calls `present()` once on its first appearance. Closing exposes the crosshair launcher. Backgrounding closes the panel while retaining session values, and does not automatically reopen it on foregrounding. A fresh process resets values and opens the panel. The overlay respects Reduce Motion; no continuous animation loops or polling tasks run.
 
-Current boundaries: no authentication, remote settings, telemetry, persistence, archive processing, injection, hooking, or signing tools. A future design can replace the panel view while reusing the state model. Adding user-requested persistence or networking later should be a separately tested change rather than a prerequisite for the UI.
+Typed `MenuEvent.valueChanged` callbacks carry `.toggle`, `.number`, or `.choice` values. Hosts supply gameplay behavior separately. The example only shows the current values on its own preview screen. It does not read or manipulate game state. There is no network, authentication, persistence, telemetry, archive modification, or signing code in the application.
 
-The preserved Free Fire ZIP sits outside the source folder and outside all build inputs. This project does not reuse Monite's binary code, assets, or signatures and cannot reconstruct its proprietary implementation from screenshots.
+See `../project.md` for the intended product and missing Free Fire integration contract. Build outputs are a standalone preview, never a modified game archive.

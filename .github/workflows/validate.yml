@@ -40,6 +40,17 @@ jobs:
           ditto DerivedData/Build/Products/Release-iphoneos/ZuchiniDemo.app build/Payload/ZuchiniDemo.app
           ditto -c -k --keepParent build/Payload build/ZuchiniDemo-unsigned.ipa
           ditto -c -k --keepParent DerivedData/Build/Products/Debug-iphonesimulator/ZuchiniDemo.app build/ZuchiniDemo-simulator.zip
+      - name: Launch menu in an iPhone simulator
+        run: |
+          DEVICE_ID=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; data=json.load(sys.stdin); print(next(d["udid"] for group in data["devices"].values() for d in group if "iPhone" in d["name"]))')
+          xcrun simctl boot "$DEVICE_ID"
+          xcrun simctl bootstatus "$DEVICE_ID" -b
+          xcrun simctl status_bar "$DEVICE_ID" override --time 9:41 --dataNetwork wifi --wifiMode active --wifiBars 3 --batteryState charged --batteryLevel 100
+          xcrun simctl install "$DEVICE_ID" DerivedData/Build/Products/Debug-iphonesimulator/ZuchiniDemo.app
+          xcrun simctl launch "$DEVICE_ID" com.example.zuchini.demo
+          sleep 5
+          xcrun simctl io "$DEVICE_ID" screenshot build/ZuchiniDemo-launch.png
+          xcrun simctl terminate "$DEVICE_ID" com.example.zuchini.demo
       - name: Upload demo builds
         uses: actions/upload-artifact@v4
         with:
@@ -47,5 +58,6 @@ jobs:
           path: |
             build/ZuchiniDemo-unsigned.ipa
             build/ZuchiniDemo-simulator.zip
+            build/ZuchiniDemo-launch.png
           if-no-files-found: error
           retention-days: 14

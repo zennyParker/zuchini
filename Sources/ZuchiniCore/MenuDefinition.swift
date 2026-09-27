@@ -4,6 +4,7 @@ public struct MenuControl: Identifiable, Equatable, Sendable {
     public enum Kind: Equatable, Sendable {
         case toggle(defaultValue: Bool)
         case slider(range: ClosedRange<Double>, step: Double, defaultValue: Double)
+        case choice(options: [String], defaultValue: String)
         case action
     }
 
@@ -40,6 +41,7 @@ public enum MenuDefinitionError: Error, Equatable {
     case invalidControl(String)
     case duplicateControl(String)
     case invalidSlider(String)
+    case invalidChoice(String)
 }
 
 /// Immutable, validated menu structure. IDs are stable host-facing identifiers.
@@ -75,6 +77,13 @@ public struct MenuDefinition: Equatable, Sendable {
                           span.isFinite, span > 0, step.isFinite, step > 0,
                           step <= span, (span / step).isFinite, value.isFinite else {
                         throw MenuDefinitionError.invalidSlider(control.id)
+                    }
+                }
+                if case let .choice(options, value) = control.kind {
+                    guard !options.isEmpty, Set(options).count == options.count,
+                          options.allSatisfy({ !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }),
+                          options.contains(value) else {
+                        throw MenuDefinitionError.invalidChoice(control.id)
                     }
                 }
             }

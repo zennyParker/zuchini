@@ -62,5 +62,10 @@ public final class MenuStore: ObservableObject {
         guard case let .number(value)? = state.value(for: id) else { return 0 }
         return value
     }
+
+    public func choiceValue(for id: String) -> String {
+        guard case let .choice(value)? = state.value(for: id) else { return "" }
+        return value
+    }
 }
 #endif
