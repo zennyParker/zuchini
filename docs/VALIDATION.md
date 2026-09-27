@@ -6,8 +6,11 @@ The source now contains the reference-inspired dark/orange panel with Aimbot, He
 
 - Project-structure validation passed on Windows.
 - All 10 portable core tests passed on Windows (Swift 6.4.0), with zero failures.
-- macOS core tests, simulator build, iPhone build, and simulator launch: pending for this revision.
+- [Apple CI run 36316574094](https://github.com/zennyParker/zuchini/actions/runs/36316574094) passed for source commit `7c07730cc0f98078718f83003aba2bb35daa78e0`: all 10 core tests, simulator Debug build, unsigned iPhone Release build, packaging, simulator installation/launch/screenshot, and artifact upload.
+- Inspected the actual simulator launch PNG: the menu opens without a prompt, all four controls fit in portrait, and the dark/orange styling and default Neck/FOV 60/Speed 1.00 values render correctly. This was visual inspection of the initial screen, not an interaction test.
+- Downloaded the three build artifacts to the workspace's `builds/run-36316574094/`. Verified the IPA contains `Payload/ZuchiniDemo.app`, its executable, bundle ID `com.example.zuchini.demo`, and minimum iOS version 16.0.
 - The initial Windows attempt hit duplicate `vcruntime` module-cache entries caused by `Downloads`/`downloads` path casing. The retry uses a fresh scratch directory; no prior build files were deleted.
+- The first Apple attempt caught a throwing call inside `StateObject`'s nonthrowing autoclosure. Moving configuration construction outside that initializer fixed the error; the successful run above includes the correction.
 
 The earlier [baseline CI run](https://github.com/zennyParker/zuchini/actions/runs/36314982979) passed seven tests and both builds for commit `e4adacc38fb540261be908603fb2a67fcc217cda`. Those results predate this UI revision and are not evidence for the changed views.
 

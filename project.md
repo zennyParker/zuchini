@@ -29,7 +29,7 @@ The three screenshots supplied by the owner are visual references: near-black pa
 
 **This is not yet a functioning Free Fire aimbot or a modified Free Fire IPA.** There is no game-state reader, target acquisition, head/neck bone mapping, aiming implementation, injector, or Free Fire host adapter. The existing repository is original menu source, not recovered MoNight/Monite source. The owner mentioned integration source, but it has not been located in this source repository.
 
-The workspace also contains a supplied game ZIP and extracted `FreeFire.app`, including a `monite.zip`. Compiled archives are not equivalent to editable integration source. They are outside Git and outside the build inputs. The old IPA's reported key prompt has not been removed or tested; the new standalone menu has no such prompt.
+The workspace also contains a supplied game ZIP and extracted `FreeFire.app`, including a `monite.zip`. Its 3,470 archive paths were inspected: no Swift, Objective-C, C/C++, headers, or Xcode project source was found. Compiled archives are not equivalent to editable integration source. They are outside Git and outside the build inputs. The old IPA's reported key prompt has not been removed or tested; the new standalone menu has no such prompt.
 
 Before implementing actual gameplay behavior, obtain the mentioned integration source or an internal test-build API: the host startup entry point, target data and head/neck transforms, camera/aim interface, FOV units, speed semantics, and exact supported game build. Do not invent offsets or claim controls affect gameplay when only UI state changes.
 
