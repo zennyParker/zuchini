@@ -2,7 +2,7 @@
 
 Read [project.md](project.md) first. It defines the iOS Aimbot-only menu, the owner's testing-team context, and what remains before a working Free Fire integration exists.
 
-The repository now also contains an [experimental game-loaded adapter](Native/README.md) and a local game-IPA packager. The user reports startup and camera movement in the previous IPA, but inadequate aiming. The new tracking candidate still requires device testing.
+The repository also contains an [experimental game-loaded adapter](Native/README.md) and a local game-IPA packager. The owner reports unstable aiming and a guest-account ban on the first delivered IPA, with the exact message "Using a modifier." See the [incident record](docs/BAN-REPORT.md). The compact menu and movable launcher do not fix that report; no current IPA is established as safe or ban-free.
 
 The menu has an Aimbot enable/disable checkbox, Head/Neck dropdown, and FOV slider in a dark/orange panel based on the supplied references. Speed has been removed. The aiming engine consumes these settings; the experimental native adapter supplies game state and applies aim rotation through recovered runtime methods. A separate **standalone native menu validation harness** remains for UI checks. The current candidate retains valid targets and uses a screen-point FOV radius. See [the original aiming analysis](docs/MONITE-AIMING.md), [the engine documentation](docs/AIMING.md) and [game adapter instructions](Native/README.md). Compilation does not establish working gameplay.
 

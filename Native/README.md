@@ -2,6 +2,8 @@
 
 This directory builds a game-loaded runtime library. It is an experimental candidate, not a device-verified release.
 
+**Known device report:** the owner reports that the first delivered IPA produced unstable aiming and a guest-account ban: "Using a modifier." See [BAN-REPORT.md](../docs/BAN-REPORT.md). The smaller menu/draggable launcher revision is not a ban-prevention fix. The validation instructions below are for a designated internal test environment; no current build is cleared for live-account use.
+
 Static inspection of the supplied game recovered named methods for `GameFacade.CurrentLocalPlayer`, `CurrentMatch`, `IsLocalTeammate`, `Player.get_HeadBoneTransform`, `get_NeckBone`, `get_IsDead`, `get_IsDieing`, `IsVisible`, and `SetAimRotation`. All 26 required IL2CPP exports exist in the supplied Unity binary. The adapter resolves these by name and uses `il2cpp_runtime_invoke`; it does not call guessed RVAs or alter anti-cheat code.
 
 The supplied metadata declares version 31 but has 40-byte method records instead of the standard 36. Every one of its 333,780 method names, declaring types, and tokens validated under the 40-byte layout. All 1,045 method generic-container links identify offset +20; the extra word is at +24. Removing that word in a separate analysis copy let Il2CppDumper 6.7.46 parse successfully. The extra word's semantics remain unidentified. The original metadata is preserved in the game; the adjusted copy and full dumps stay outside Git.

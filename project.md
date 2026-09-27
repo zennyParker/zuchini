@@ -4,11 +4,11 @@ This is the source of truth for contributors and AI agents. Read it before chang
 
 ## Purpose and intended users
 
-**Current device report (2026-09-27):** the owner reports unstable aiming and a guest-account ban with a reason described as "using a modifier" after using the first delivered Zucchini IPA. The owner confirmed the exact message as "Using a modifier." The installed filename/hash is not independently established. Do not label any current IPA safe, ban-free, or cleared for live-account testing. The compact-menu revision changes UI only and does not resolve this report. See [BAN-REPORT.md](docs/BAN-REPORT.md).
+**Current device report (2026-09-27):** the owner reports unstable aiming and a guest-account ban with a reason described as "using a modifier" after using the first delivered Zucchini IPA. The owner confirmed the exact message as "Using a modifier." The installed filename/hash is not independently established. Do not label any current IPA safe, ban-free, or cleared for live-account testing. The compact-menu revision changes UI only and does not resolve this report. See [BAN-REPORT.md](docs/BAN-REPORT.md). The owner has requested further Monite comparison to understand and prevent repeat bans; that investigation is unresolved, and no ban-prevention result is established.
 
 Build an iOS, IPA-delivered mod menu with **one gameplay feature: Aimbot**. The project owner describes this as a Free Fire internal testing project for a team of **10 people** as of 2026-09-27, including a member who joined the previous day. This team affiliation and authorization are owner-provided context, not independently verified by this repository.
 
-The owner's revised priority is a working end-to-end integration first, acknowledging that anti-cheat detection changes over time. Undetectability is not an acceptance criterion or a promised property. No detection-evasion implementation or detection test result currently exists here. Record the exact game version, environment, and observations for any future test.
+The owner's revised priority is a working end-to-end integration first, acknowledging that anti-cheat detection changes over time. Undetectability is not an acceptance criterion or a promised property. No detection-evasion implementation or successful detection-resistance result exists here; the account-ban report above must not be omitted. Record the exact game version, environment, and observations for any future test.
 
 ## Required product behavior
 
@@ -48,7 +48,7 @@ Follow-up evidence in `docs/BINARY-DIFFERENCES.md` identifies 92 redirections an
 - The owner plans to sign/install on an available iPhone with ESign. The unsigned IPA still needs a suitable Apple certificate and provisioning profile; successful compilation does not establish installation compatibility.
 - Keep signing secrets, provisioning profiles, game archives, and extracted game binaries out of this public repository.
 - Artifact `Zucchini-game-runtime` contains our new runtime dylib. `scripts/package-game.py` combines it locally with the exact supplied game ZIP into a new unsigned game IPA. The existing `ZuchiniDemo-unsigned.ipa` remains only the separate UI harness.
-- Current experimental runtime source: `9a4a4ad0c43ceea34927b32d0b5a516ed89061ac`. Use `../builds/Zucchini-FreeFire-1.132.1-stable-tracking-unsigned.ipa`; see `docs/VALIDATION.md` for package verification and CI evidence. The smaller `clean` package is withdrawn because removing its nested archive was not validated on device. iOS 16+ and the unchanged bundle identifier `com.dts.freefireth` are required.
+- Latest UI-revision runtime source: `14011aa6497438c8b21eed011227b34ebad29bce`. The locally packaged artifact is `../builds/Zucchini-FreeFire-1.132.1-compact-menu-v2-unsigned.ipa`; it is not a ban-prevention fix or cleared for live-account use. see `docs/VALIDATION.md` for package verification and CI evidence. The smaller `clean` package is withdrawn because removing its nested archive was not validated on device. iOS 16+ and the unchanged bundle identifier `com.dts.freefireth` are required.
 - Apple signing reference: https://developer.apple.com/documentation/xcode/distributing-your-app-to-registered-devices
 
 ## Validation and completion criteria

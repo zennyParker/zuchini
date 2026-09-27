@@ -1,5 +1,20 @@
 # Validation
 
+## Compact menu and movable launcher - 2026-09-27
+
+**Account-safety status remains unresolved.** The owner reports unstable aim and a guest-account ban on the first delivered IPA, with the exact message "Using a modifier." See [BAN-REPORT.md](BAN-REPORT.md). This UI revision does not change `stable-screen-v1` targeting or provide a ban-prevention fix. Earlier test instructions below are historical and do not clear any build for live-account use.
+
+- Added a draggable 44-point launcher, safe-area clamping, relative placement across rotation, session retention across closing/reopening, and VoiceOver move actions. The native window now obtains its closed-menu touch region from the actual launcher frame.
+- Reduced maximum panel width from 560 to 400 points and height from 550 to 360; reduced typography, padding and card spacing while retaining 44-point interactive rows. The close button now has an explicit full-size hit shape.
+- **33 portable Windows tests passed**, including new launcher placement tests for boundaries, rotation, tiny viewports and nonfinite input.
+- [Apple CI run 36325881007](https://github.com/zennyParker/zuchini/actions/runs/36325881007) passed for source `14011aa6497438c8b21eed011227b34ebad29bce`: **37 Swift tests**, four packaging tests, structure validation, simulator/device builds and native runtime build.
+- The new XCUITest passed drag without opening, movement in both axes, reopen/close position retention, launcher bounds after rotation, compact portrait panel dimensions, and selecting Head in landscape. It runs in the standalone UI harness, not Free Fire. The initial test setup failures were corrected; only this final run is the passing interaction result.
+- Reviewed simulator portrait and full-screen landscape captures. The app-only XCUITest screenshot attachment has a rotation/cropping artifact; the separate `simctl` full-screen capture shows the complete landscape panel. Native game-window touch passthrough, long-press export interaction, Dynamic Type and physical-iPhone behavior remain unverified.
+- Latest packaged artifact: `../builds/Zucchini-FreeFire-1.132.1-compact-menu-v2-unsigned.ipa`, **986,441,436 bytes**. SHA-256: `472e9a4f05de016d74911245013c3097b039c28471d7761068ab44b5fec7086f`. Runtime SHA-256: `82d4dbe305dc412585138722cd3c4df008aba177e0517f2be327c3653d1ce033`.
+- ZIP integrity, exact expected inventory and all **3,275 preserved resource hashes** passed, including the nested `monite.zip`. Main executable, Unity and metadata are unchanged from the supplied input. The artifact is unsigned and has not been tested on an iPhone.
+- Expanded [original aiming analysis](MONITE-AIMING.md) with archive identity, enemy snapshot collection/publication, record layout, visibility predicate, trigger enums and explicit recovery limits. Complete Monite recovery, exact runtime parity and ban prevention are not established.
+
+
 ## Stable tracking revision - 2026-09-27
 
 The previous IPA has user-reported startup and camera movement, but inadequate aiming. This revision changes screen-space FOV, main-camera sampling, target retention and tracking response; see [MONITE-AIMING.md](MONITE-AIMING.md). It is pending a new physical-iPhone test.
@@ -10,7 +25,7 @@ The previous IPA has user-reported startup and camera movement, but inadequate a
 - [Apple CI run 36324010358](https://github.com/zennyParker/zuchini/actions/runs/36324010358) passed for source `9a4a4ad0c43ceea34927b32d0b5a516ed89061ac`: **34 Swift tests passed**, simulator/device builds, native game library build and simulator harness launch.
 - New game IPA: `../builds/Zucchini-FreeFire-1.132.1-stable-tracking-unsigned.ipa`, **986,429,593 bytes**. SHA-256: `073335cc9baa8b12796c37d6813f742c679a6abaa2a9475bbe58651ae845570e`. Runtime SHA-256: `a9028cbee711f7dda894f6b08b4f0af15a4d422b351e1fd34032ed4f3e10c377`.
 - All ZIP entries and the complete expected inventory passed validation. All **3,275 preserved resources** match the original SHA-256 values, including `monite.zip`. The game executable, Unity and metadata remain unchanged. The new IPA is only 3,425 bytes larger than the previous resource-preserving candidate.
-- This is the current test candidate; the preceding resource-preserving IPA remains available for comparison. Sign the entire new IPA with ESign on iOS 16+, keeping `com.dts.freefireth`. Head/Neck accuracy, Unity update timing, scoped cameras, occlusion, lifecycle behavior and sustained device stability remain to be tested.
+- This was the preceding tracking candidate; it remains available for comparison. Sign the entire new IPA with ESign on iOS 16+, keeping `com.dts.freefireth`. Head/Neck accuracy, Unity update timing, scoped cameras, occlusion, lifecycle behavior and sustained device stability remain to be tested.
 
 ## Experimental game integration - 2026-09-27
 
