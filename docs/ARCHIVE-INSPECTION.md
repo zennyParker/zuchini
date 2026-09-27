@@ -2,6 +2,8 @@
 
 `monite.zip` was inspected without executing its contents. It is a compiled Free Fire application tree, not a folder of menu settings or editable aimbot source. The archive's runtime purpose remains unverified; retain it in distributed test packages.
 
+Follow-up [static reverse engineering](BINARY-DIFFERENCES.md) now classifies all nonmatching files, identifies actual instruction redirects, traces managed-hook fallback paths, and compares Zucchini's core game methods. That report supersedes the earlier inventory-only uncertainty where it provides stronger evidence.
+
 ## Observations
 
 - Compressed archive: 498,191,125 bytes. Expanded entries total 1,479,403,864 bytes, across 3,470 paths (including directories).

@@ -35,6 +35,8 @@ The reverse-engineered adapter must be validated on device against the inspected
 
 Archive inspection also found pre-existing hook/Monite sections and code differences inside the supplied Unity binary. Replacing the menu dylib does not remove those modifications. Their compatibility with our runtime remains unresolved; see `docs/ARCHIVE-INSPECTION.md`. Do not describe the supplied game engine as pristine or free of legacy modifications.
 
+Follow-up evidence in `docs/BINARY-DIFFERENCES.md` identifies 92 redirections and two direct early-return edits. All 12 mapped managed-hook entries have statically verified original-code fallback paths when their callback layers contain zero. Six core adapter methods are byte-identical between inner and outer engines. These static findings narrow compatibility risks but do not establish runtime stability or recover the original menu's aiming algorithm.
+
 ## Build and delivery
 
 - Development machine: Windows; no local Mac/Xcode installation.
