@@ -22,16 +22,16 @@ There are no timers, display links, network requests, filesystem scans, or disk 
 
 ```text
 source/
-    Package.swift
-    Sources/
-      ZuchiniCore/        Control definitions and state
-      ZuchiniMenu/        SwiftUI presentation and UIKit adapter
-    Examples/
-      ZuchiniDemo/        Standalone iOS app and Xcode project
-    Tests/
-      ZuchiniCoreTests/   Input, range, reset, and isolation tests
-    docs/                Architecture, research, device test checklist
-    scripts/             Reproducible Xcode project generation
+  Package.swift
+  Sources/
+    ZuchiniCore/        Control definitions and state
+    ZuchiniMenu/        SwiftUI presentation and UIKit adapter
+  Examples/
+    ZuchiniDemo/        Standalone iOS app and Xcode project
+  Tests/
+    ZuchiniCoreTests/   Input, range, reset, and isolation tests
+  docs/                Architecture, research, device test checklist
+  scripts/             Reproducible Xcode project generation
 ```
 
 This repository contains source only. Game archives, extracted game files, and toolchain installers are outside the repository and are not build dependencies.
@@ -116,6 +116,6 @@ Start with `Sources/ZuchiniMenu/ZuchiniPanel.swift` and `MenuTheme.swift`. Keep 
 
 ## Verification status
 
-The source and project structure were checked on Windows. Swift 6.4.0 compiled the core and executed seven tests with zero failures on 2026-09-27. See the repository's Actions runs for Apple build results and `docs/VALIDATION.md` for remaining checks and Windows toolchain warnings. Simulator interaction, signing, and iPhone stability testing remain outstanding.
+Seven core tests passed on both Windows (Swift 6.4.0) and macOS (Swift 5.10). The [first Apple CI run](https://github.com/zennyParker/zuchini/actions/runs/36314982979) passed the simulator and unsigned iPhone builds using Xcode 15.4 on 2026-09-27. See `docs/VALIDATION.md` for remaining checks and Windows toolchain warnings. Simulator interaction, signing, and iPhone stability testing remain outstanding.
 
 Apple's supported [SwiftUI/UIKit hosting](https://developer.apple.com/documentation/swiftui/uihostingcontroller) and the official [Swift package description](https://docs.swift.org/package-manager/PackageDescription/PackageDescription.html) informed this structure. The research notes explain the other design choices.
