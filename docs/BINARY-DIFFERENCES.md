@@ -97,3 +97,7 @@ Local analysis tools and disassembly remain outside Git:
 - `../analysis/reverse-differences/monite-overview.json`, `monite-symbols.json`, and `monite-initializers.json`: original-library structure and startup observations.
 
 Mach-O parsing follows [Apple's loader definitions](https://github.com/apple-oss-distributions/xnu/blob/main/EXTERNAL_HEADERS/mach-o/loader.h). ARM64 disassembly uses an isolated local Capstone 5.0.6 installation and its [Python interface](https://www.capstone-engine.org/lang_python.html). Neither supplied binary was executed or modified. Proprietary binaries, disassembly, and credentials were not uploaded to GitHub.
+
+## Subsequent aiming analysis
+
+The symbol-only limit above was superseded by a deeper static pass: [MONITE-AIMING.md](MONITE-AIMING.md) records chained imports, decoded configuration strings, screen-based selection and quaternion interpolation. It remains a partial reconstruction, not recovered source or verified device behavior.

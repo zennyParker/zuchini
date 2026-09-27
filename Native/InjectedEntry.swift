@@ -21,10 +21,11 @@ private final class GameHost: AimingHost {
         let candidates = targets.compactMap { target -> AimCandidate? in
             guard let id = target["id"] as? String else { return nil }
             return AimCandidate(id: id, head: vector(target["head"]), neck: vector(target["neck"]),
-                                isEnemy: true, isAlive: true, isVisible: true)
+                                isEnemy: true, isAlive: true, isVisible: true,
+                                screenDistance: (target["screenDistance"] as? NSNumber)?.doubleValue)
         }
         return AimFrame(sequence: sequence.uint64Value, capturedAt: time.doubleValue,
-                        cameraOrigin: origin, cameraForward: forward, candidates: candidates)
+                        cameraOrigin: origin, cameraForward: forward, candidates: candidates, fovSpace: .screenPoints)
     }
     func applyAimCommand(_ command: AimCommand) -> Bool {
         runtime.apply(x: command.direction.x, y: command.direction.y, z: command.direction.z,
@@ -147,6 +148,10 @@ private final class InjectionCoordinator: NSObject {
             "enabled": store.toggleValue(for: "aimbot.enabled"),
             "target": store.choiceValue(for: "aimbot.target"),
             "fov": store.numberValue(for: "aimbot.fov"),
+            "fovUnits": "screen point radius",
+            "trackingRevision": "stable-screen-v1",
+            "lockedTarget": controller.lastDecision.command?.targetID ?? "none",
+            "aimErrorDegrees": controller.lastDecision.errorDegrees.map { $0 as Any } ?? NSNull(),
             "frameCount": frameCount,
             "captureCalls": host.runtime.reads,
             "appliedCommands": host.runtime.writes,

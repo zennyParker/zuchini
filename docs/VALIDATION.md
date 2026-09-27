@@ -1,5 +1,14 @@
 # Validation
 
+## Stable tracking revision - 2026-09-27
+
+The previous IPA has user-reported startup and camera movement, but inadequate aiming. This revision changes screen-space FOV, main-camera sampling, target retention and tracking response; see [MONITE-AIMING.md](MONITE-AIMING.md). It is pending a new physical-iPhone test.
+
+- All **30 portable Swift tests passed** on Windows, including five added regression cases for crowded target crossings, moving-target lag, screen-radius selection, invalid projections and FOV boundary changes.
+- The 72,000-frame simulation passed with 66,000 commands and a maximum step of approximately 1.5 degrees at 120 Hz. This is accelerated synthetic validation, not device gameplay.
+- Four packaging tests, project structure and diff checks passed.
+- Apple build and replacement game package are pending for this revision; older build evidence below does not validate these native changes.
+
 ## Experimental game integration - 2026-09-27
 
 The repository now contains a game-loaded adapter for the supplied Free Fire 1.132.1 build. Static inspection recovered named player, bone, camera, team, visibility, and aim-rotation methods; all 26 IL2CPP exports required by the adapter were found in its Unity binary. The custom metadata layout was normalized only in an analysis copy, with all 333,780 method records and 1,045 generic-container references checked. See [Native/README.md](../Native/README.md).
@@ -95,4 +104,4 @@ Windows tests exclude SwiftUI/UIKit. The GitHub workflow additionally compiles b
 - Repeat interaction/orientation/lifecycle checks.
 - Run 30 minutes with periodic control changes; record responsiveness, crashes, CPU/memory trends, and device temperature.
 
-No physical-iPhone, Free Fire gameplay, targeting accuracy, prompt-free game startup, or anti-cheat detection tests have been completed. The experimental adapter is now implemented; device installation and runtime verification remain required. Do not treat UI state tests as gameplay validation.
+The user subsequently reports that the previous IPA starts and moves the camera, with inadequate aiming. No agent-observed physical-iPhone test, targeting-accuracy validation, or anti-cheat test has been completed. The experimental adapter is now implemented; device installation and runtime verification remain required. Do not treat UI state tests as gameplay validation.

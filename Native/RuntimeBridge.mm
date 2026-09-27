@@ -54,19 +54,20 @@ constexpr uint8_t expectedUUID[16]={0xc8,0xde,0x73,0x71,0xcb,0xa7,0x3e,0x7a,0x9e
     bool fault;
     NSString *_status;
     NSUInteger _reads, _writes;
-    P playerClass, facadeClass, objectClass, transformClass, physicsClass, hitClass, quatClass;
+    P playerClass, facadeClass, objectClass, transformClass, physicsClass, hitClass, quatClass, cameraClass;
     P localMethod, matchMethod, teammateMethod, deadMethod, dyingMethod, visibleMethod;
     P headMethod, neckMethod, positionMethod, forwardMethod, rootMethod, childMethod;
     P raycastMethod, hitTransformMethod, lookMethod, setAimMethod, findMethod, instanceMethod;
-    P cameraField;
+    P mainCameraMethod, cameraTransformMethod, viewportMethod;
     int hitSize;
-    uint32_t matchHandle, localHandle;
+    uint32_t matchHandle, localHandle, cameraHandle;
     std::vector<uint32_t> players;
     std::map<std::string,uint32_t> lastTargets;
     std::map<std::string,P> methods;
     double refreshedAt, capturedAt;
     uint64_t sequence, epoch;
     NSString *selectedPoint;
+    NSString *preferredTargetID;
 }
 - (instancetype)init {
     if ((self=[super init])) { _status=@"Waiting for game"; }
@@ -163,7 +164,8 @@ constexpr uint8_t expectedUUID[16]={0xc8,0xde,0x73,0x71,0xcb,0xa7,0x3e,0x7a,0x9e
     physicsClass=[self findClass:"Physics" space:"UnityEngine" image:"UnityEngine.PhysicsModule.dll"];
     hitClass=[self findClass:"RaycastHit" space:"UnityEngine" image:"UnityEngine.PhysicsModule.dll"];
     quatClass=[self findClass:"Quaternion" space:"UnityEngine" image:"UnityEngine.CoreModule.dll"];
-    if (!facadeClass || !playerClass || !objectClass || !transformClass || !physicsClass || !hitClass || !quatClass) {
+    cameraClass=[self findClass:"Camera" space:"UnityEngine" image:"UnityEngine.CoreModule.dll"];
+    if (!facadeClass || !playerClass || !objectClass || !transformClass || !physicsClass || !hitClass || !quatClass || !cameraClass) {
         _status=@"Required game types unavailable"; return NO;
     }
 #define METHOD(variable,name,cls,n,type) variable=[self method:name on:cls count:n firstType:type]; if (!variable) { _status=[NSString stringWithFormat:@"Missing method: %s",name]; return NO; }
@@ -185,10 +187,12 @@ constexpr uint8_t expectedUUID[16]={0xc8,0xde,0x73,0x71,0xcb,0xa7,0x3e,0x7a,0x9e
     METHOD(setAimMethod,"SetAimRotation",playerClass,2,"UnityEngine.Quaternion")
     METHOD(findMethod,"FindObjectsOfType",objectClass,1,"System.Type")
     METHOD(instanceMethod,"GetInstanceID",objectClass,0,nullptr)
+    METHOD(mainCameraMethod,"get_main",cameraClass,0,nullptr)
+    METHOD(cameraTransformMethod,"get_transform",cameraClass,0,nullptr)
+    METHOD(viewportMethod,"WorldToViewportPoint",cameraClass,1,"UnityEngine.Vector3")
 #undef METHOD
-    cameraField=api.class_get_field_from_name(playerClass,"MainCameraTransform");
     uint32_t alignment=0; hitSize=api.class_value_size(hitClass,&alignment);
-    if (!cameraField || hitSize<16 || hitSize>512) { _status=@"Invalid runtime layout"; return NO; }
+    if (hitSize<16 || hitSize>512) { _status=@"Invalid runtime layout"; return NO; }
     ready=true; _status=@"Game methods resolved"; return YES;
 }
 - (void)reset {
@@ -196,8 +200,10 @@ constexpr uint8_t expectedUUID[16]={0xc8,0xde,0x73,0x71,0xcb,0xa7,0x3e,0x7a,0x9e
         for (auto handle:players) api.gchandle_free(handle);
         if (localHandle) api.gchandle_free(localHandle);
         if (matchHandle) api.gchandle_free(matchHandle);
+        if (cameraHandle) api.gchandle_free(cameraHandle);
     }
-    players.clear(); lastTargets.clear(); localHandle=matchHandle=0; refreshedAt=0; epoch++;
+    players.clear(); lastTargets.clear(); localHandle=matchHandle=cameraHandle=0; refreshedAt=0; epoch++;
+    preferredTargetID=nil; selectedPoint=nil;
 }
 - (BOOL)eligible:(P)player local:(P)local {
     if (!player || player==local) return NO;
@@ -228,6 +234,7 @@ constexpr uint8_t expectedUUID[16]={0xc8,0xde,0x73,0x71,0xcb,0xa7,0x3e,0x7a,0x9e
     NSAssert([NSThread isMainThread],@"Runtime capture must use main thread");
     double sampleTime=CACurrentMediaTime();
     _reads++; fault=false; lastTargets.clear();
+    if (![selectedPoint isEqualToString:target]) preferredTargetID=nil;
     if (![self initializeRuntime] || !std::isfinite(fov) || fov<1 || fov>180) return nil;
     P local=[self call:localMethod object:nullptr arguments:nullptr];
     P match=[self call:matchMethod object:nullptr arguments:nullptr];
@@ -239,9 +246,15 @@ constexpr uint8_t expectedUUID[16]={0xc8,0xde,0x73,0x71,0xcb,0xa7,0x3e,0x7a,0x9e
         [self boolean:dyingMethod object:local arguments:nullptr fallback:YES] || fault) {
         [self reset]; _status=@"Local player inactive"; return nil;
     }
-    P camera=nullptr; api.field_get_value(local,cameraField,&camera);
+    P camera=[self call:mainCameraMethod object:nullptr arguments:nullptr];
+    if (!camera || fault) { preferredTargetID=nil; _status=@"Camera unavailable"; return nil; }
+    if (!cameraHandle || api.gchandle_get_target(cameraHandle)!=camera) {
+        if (cameraHandle) api.gchandle_free(cameraHandle);
+        cameraHandle=api.gchandle_new(camera,false); preferredTargetID=nil; epoch++;
+    }
+    P cameraTransform=[self call:cameraTransformMethod object:camera arguments:nullptr];
     Vec3 origin,forward;
-    if (![self position:camera into:&origin method:positionMethod] || ![self position:camera into:&forward method:forwardMethod]) {
+    if (![self position:cameraTransform into:&origin method:positionMethod] || ![self position:cameraTransform into:&forward method:forwardMethod]) {
         _status=@"Camera unavailable"; return nil;
     }
     double now=CACurrentMediaTime();
@@ -263,7 +276,12 @@ constexpr uint8_t expectedUUID[16]={0xc8,0xde,0x73,0x71,0xcb,0xa7,0x3e,0x7a,0x9e
         refreshedAt=now;
     }
     if (fault) return nil;
-    struct Candidate { uint32_t handle; P player; Vec3 head,neck; bool hasHead,hasNeck; double angle; int32_t id; };
+    CGSize viewportSize=UIScreen.mainScreen.bounds.size;
+    for (UIWindow *window in UIApplication.sharedApplication.windows) {
+        if (window.isKeyWindow) { viewportSize=window.bounds.size; break; }
+    }
+    if (!std::isfinite(viewportSize.width) || !std::isfinite(viewportSize.height) || viewportSize.width<=1 || viewportSize.height<=1) return nil;
+    struct Candidate { uint32_t handle; P player; Vec3 head,neck; bool hasHead,hasNeck,preferred; double screenDistance; int32_t id; };
     std::vector<Candidate> candidates;
     bool headTarget=[target isEqualToString:@"Head"];
     if (!headTarget && ![target isEqualToString:@"Neck"]) return nil;
@@ -281,38 +299,54 @@ constexpr uint8_t expectedUUID[16]={0xc8,0xde,0x73,0x71,0xcb,0xa7,0x3e,0x7a,0x9e
         double dx=point.x-origin.x,dy=point.y-origin.y,dz=point.z-origin.z;
         double length=sqrt(dx*dx+dy*dy+dz*dz),fl=sqrt(forward.x*forward.x+forward.y*forward.y+forward.z*forward.z);
         if (!(length>1e-6 && fl>1e-6) || !std::isfinite(length) || !std::isfinite(fl)) continue;
-        candidate.angle=acos(std::clamp((dx*forward.x+dy*forward.y+dz*forward.z)/(length*fl),-1.0,1.0));
-        if (!std::isfinite(candidate.angle) || candidate.angle>fov*M_PI/360) continue;
+        if (dx*forward.x+dy*forward.y+dz*forward.z<=0) continue;
+        P projectionArgs[]={&point};
+        P projected=[self call:viewportMethod object:camera arguments:projectionArgs];
+        if (!projected || fault) break;
+        Vec3 viewport; memcpy(&viewport,api.object_unbox(projected),sizeof(viewport));
+        if (!finite(viewport) || viewport.z<=0.01f) continue;
+        candidate.screenDistance=hypot((viewport.x-0.5)*viewportSize.width,(viewport.y-0.5)*viewportSize.height);
+        if (!std::isfinite(candidate.screenDistance) || candidate.screenDistance>fov) continue;
         P id=[self call:instanceMethod object:player arguments:nullptr]; if (!id || fault) break;
         memcpy(&candidate.id,api.object_unbox(id),sizeof(int32_t));
+        NSString *identifier=[NSString stringWithFormat:@"%llu:%d",(unsigned long long)epoch,candidate.id];
+        candidate.preferred=[preferredTargetID isEqualToString:identifier];
         candidates.push_back(candidate);
     }
     if (fault) return nil;
-    std::sort(candidates.begin(),candidates.end(),[](const Candidate&a,const Candidate&b){return a.angle<b.angle;});
+    std::sort(candidates.begin(),candidates.end(),[](const Candidate&a,const Candidate&b){
+        if (a.preferred!=b.preferred) return a.preferred;
+        if (a.screenDistance!=b.screenDistance) return a.screenDistance<b.screenDistance;
+        return a.id<b.id;
+    });
     NSMutableArray *output=[NSMutableArray array];
-    // Bound physics work. Conservative exclusion if the nearest eight are occluded.
+    // Keep the existing lock inside the physics budget even in a crowded viewport.
     for (size_t i=0;i<std::min<size_t>(8,candidates.size());i++) {
         const auto &c=candidates[i]; Vec3 point=headTarget?c.head:c.neck;
         if (![self lineOfSightFrom:origin to:point player:c.player]) { if(fault) break; else continue; }
         NSString *identifier=[NSString stringWithFormat:@"%llu:%d",(unsigned long long)epoch,c.id];
         lastTargets[identifier.UTF8String]=c.handle;
-        NSMutableDictionary *item=[@{@"id":identifier} mutableCopy];
+        NSMutableDictionary *item=[@{@"id":identifier,@"screenDistance":@(c.screenDistance)} mutableCopy];
         if (c.hasHead) item[@"head"]=array(c.head);
         if (c.hasNeck) item[@"neck"]=array(c.neck);
         [output addObject:item];
     }
     if (fault) {lastTargets.clear(); return nil;}
+    if (preferredTargetID && lastTargets.find(preferredTargetID.UTF8String)==lastTargets.end()) preferredTargetID=nil;
     selectedPoint=[target copy]; sequence++; capturedAt=sampleTime;
     _status=output.count?@"Targets available":@"No eligible visible target";
     return @{@"sequence":@(sequence),@"capturedAt":@(capturedAt),@"origin":array(origin),@"forward":array(forward),@"targets":output};
 }
 - (BOOL)applyX:(double)x y:(double)y z:(double)z targetID:(NSString*)targetID sequence:(uint64_t)frameSequence {
+    NSAssert([NSThread isMainThread],@"Runtime apply must use main thread");
+    preferredTargetID=nil;
     if (!ready || fault || frameSequence!=sequence || CACurrentMediaTime()-capturedAt>0.1 ||
         !std::isfinite(x)||!std::isfinite(y)||!std::isfinite(z)) return NO;
     auto found=lastTargets.find(targetID.UTF8String); if(found==lastTargets.end()) return NO;
     P target=api.gchandle_get_target(found->second),local=api.gchandle_get_target(localHandle),match=api.gchandle_get_target(matchHandle);
     if (!local || !match || [self call:localMethod object:nullptr arguments:nullptr]!=local ||
         [self call:matchMethod object:nullptr arguments:nullptr]!=match || ![self eligible:target local:local]) return NO;
+    if (!cameraHandle || [self call:mainCameraMethod object:nullptr arguments:nullptr]!=api.gchandle_get_target(cameraHandle)) return NO;
     if ([self boolean:deadMethod object:local arguments:nullptr fallback:YES] || fault) return NO;
     double length=sqrt(x*x+y*y+z*z); if (!std::isfinite(length)||length<1e-8) return NO;
     Vec3 direction={(float)(x/length),(float)(y/length),(float)(z/length)}, up={0,1,0};
@@ -324,6 +358,7 @@ constexpr uint8_t expectedUUID[16]={0xc8,0xde,0x73,0x71,0xcb,0xa7,0x3e,0x7a,0x9e
     bool apply=true; P aimArgs[]={&rotation,&apply};
     [self call:setAimMethod object:local arguments:aimArgs];
     if (fault) return NO;
+    preferredTargetID=[targetID copy];
     _writes++; _status=@"Aim command applied"; lastTargets.clear(); return YES;
 }
 @end

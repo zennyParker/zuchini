@@ -35,14 +35,16 @@ public struct AimVector: Equatable, Sendable {
 
     public func angleDegrees(to other: AimVector) -> Double? {
         guard let a = normalized(), let b = other.normalized() else { return nil }
-        return acos(min(1, max(-1, a.dot(b)))) * 180 / .pi
+        let cross = AimVector(a.y * b.z - a.z * b.y, a.z * b.x - a.x * b.z,
+                              a.x * b.y - a.y * b.x)
+        return atan2(sqrt(cross.dot(cross)), min(1, max(-1, a.dot(b)))) * 180 / .pi
     }
 }
 
 public struct AimSettings: Equatable, Sendable {
     public let enabled: Bool
     public let targetPoint: AimTargetPoint
-    /// Full cone angle: FOV 60 accepts directions up to 30 degrees off camera forward.
+    /// Legacy name retained for source compatibility. Units are selected by AimFrame.fovSpace.
     public let fovDegrees: Double
 
     public init(enabled: Bool, targetPoint: AimTargetPoint, fovDegrees: Double) {
@@ -68,12 +70,19 @@ public struct AimCandidate: Equatable, Sendable {
     public let isAlive: Bool
     /// Host must supply line-of-sight visibility, not just on-screen visibility.
     public let isVisible: Bool
+    /// Distance from the viewport center in screen points; required for screen-space FOV.
+    public let screenDistance: Double?
 
     public init(id: String, head: AimVector?, neck: AimVector?,
-                isEnemy: Bool, isAlive: Bool, isVisible: Bool) {
+                isEnemy: Bool, isAlive: Bool, isVisible: Bool, screenDistance: Double? = nil) {
         self.id = id; self.head = head; self.neck = neck
         self.isEnemy = isEnemy; self.isAlive = isAlive; self.isVisible = isVisible
+        self.screenDistance = screenDistance
     }
+}
+
+public enum AimFOVSpace: Equatable, Sendable {
+    case angularCone, screenPoints
 }
 
 public struct AimFrame: Equatable, Sendable {
@@ -83,12 +92,14 @@ public struct AimFrame: Equatable, Sendable {
     public let cameraOrigin: AimVector
     public let cameraForward: AimVector
     public let candidates: [AimCandidate]
+    public let fovSpace: AimFOVSpace
 
     public init(sequence: UInt64, capturedAt: TimeInterval, cameraOrigin: AimVector,
-                cameraForward: AimVector, candidates: [AimCandidate]) {
+                cameraForward: AimVector, candidates: [AimCandidate], fovSpace: AimFOVSpace = .angularCone) {
         self.sequence = sequence; self.capturedAt = capturedAt
         self.cameraOrigin = cameraOrigin; self.cameraForward = cameraForward
         self.candidates = candidates
+        self.fovSpace = fovSpace
     }
 }
 
@@ -127,15 +138,15 @@ public struct AimingEngine: Sendable {
     // Fixed implementation parameters, not additional product controls.
     private let maximumAge = 0.1
     private let maximumFrameGap = 0.1
-    private let responseTime = 0.12
     private let maximumAngularRate = Double.pi  // 180 degrees per second
-    private let switchAdvantage = 3.0 * Double.pi / 180
+    private var lastFOVSpace: AimFOVSpace?
 
     public init() {}
 
     public mutating func reset() {
         lockedTargetID = nil; lastUpdate = nil; lastSequence = nil
         lastCapture = nil; lastPoint = nil
+        lastFOVSpace = nil
     }
 
     public mutating func update(frame: AimFrame?, settings: AimSettings, at now: TimeInterval) -> AimDecision {
@@ -159,8 +170,9 @@ public struct AimingEngine: Sendable {
 
         let delta = lastUpdate.map { now - $0 }
         lastUpdate = now; lastSequence = frame.sequence; lastCapture = frame.capturedAt
-        if lastPoint != settings.targetPoint { lockedTargetID = nil }
+        if lastPoint != settings.targetPoint || lastFOVSpace != frame.fovSpace { lockedTargetID = nil }
         lastPoint = settings.targetPoint
+        lastFOVSpace = frame.fovSpace
         if let delta, delta > maximumFrameGap {
             lockedTargetID = nil
             return AimDecision(status: .interrupted)
@@ -178,12 +190,21 @@ public struct AimingEngine: Sendable {
                   let point = settings.targetPoint == .head ? candidate.head : candidate.neck,
                   let direction = (point - frame.cameraOrigin).normalized() else { continue }
             let angle = acos(min(1, max(-1, forward.dot(direction))))
-            guard angle <= halfFov + 1e-12 else { continue }
-            let selection = Selection(id: candidate.id, direction: direction, angle: angle)
+            let score: Double
+            switch frame.fovSpace {
+            case .angularCone:
+                guard angle <= halfFov + 1e-12 else { continue }
+                score = angle
+            case .screenPoints:
+                guard angle < .pi / 2, let distance = candidate.screenDistance,
+                      distance.isFinite, distance >= 0, distance <= settings.fovDegrees else { continue }
+                score = distance
+            }
+            let selection = Selection(id: candidate.id, direction: direction, angle: angle, score: score)
             if candidate.id == lockedTargetID { retained = selection }
             if let current = best {
-                if angle < current.angle - 1e-12 ||
-                    (abs(angle - current.angle) <= 1e-12 && candidate.id < current.id) {
+                if score < current.score - 1e-12 ||
+                    (abs(score - current.score) <= 1e-12 && candidate.id < current.id) {
                     best = selection
                 }
             } else { best = selection }
@@ -192,7 +213,8 @@ public struct AimingEngine: Sendable {
             lockedTargetID = nil
             return AimDecision(status: .noTarget)
         }
-        if let retained, retained.angle <= selected.angle + switchAdvantage { selected = retained }
+        // Reacquire only after the current target becomes ineligible, not on score changes.
+        if let retained { selected = retained }
         lockedTargetID = selected.id
         guard let delta else { return AimDecision(status: .priming) }
 
@@ -207,18 +229,13 @@ public struct AimingEngine: Sendable {
         return AimDecision(status: status)
     }
 
-    /// Exact integration of d(error)/dt = -min(maximumAngularRate, error/responseTime)
-    /// for a stationary target. Approach is bounded, continuous and cannot overshoot.
+    /// Bounded acquisition with exact tracking once the target is within one frame's travel.
+    /// Removing exponential easing avoids persistent trailing error on moving targets.
     private func smoothed(from: AimVector, to: AimVector, angle: Double, delta: Double) -> AimVector {
         guard angle > 1e-10 else { return to }
-        let threshold = maximumAngularRate * responseTime
-        let remaining: Double
-        if angle > threshold {
-            let linearTime = (angle - threshold) / maximumAngularRate
-            if delta <= linearTime { remaining = angle - maximumAngularRate * delta }
-            else { remaining = threshold * exp(-(delta - linearTime) / responseTime) }
-        } else { remaining = angle * exp(-delta / responseTime) }
-        let fraction = min(1, max(0, 1 - remaining / angle))
+        let travel = maximumAngularRate * delta
+        if angle <= travel { return to }
+        let fraction = min(1, max(0, travel / angle))
         let denominator = sin(angle) // Accepted targets are within 90 degrees.
         let a = sin((1 - fraction) * angle) / denominator
         let b = sin(fraction * angle) / denominator
@@ -230,5 +247,6 @@ public struct AimingEngine: Sendable {
         let id: String
         let direction: AimVector
         let angle: Double
+        let score: Double
     }
 }

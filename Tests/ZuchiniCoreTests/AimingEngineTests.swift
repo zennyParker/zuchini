@@ -30,12 +30,20 @@ final class AimingEngineTests: XCTestCase {
     }
 
     func testHeadAndNeckUseDistinctPositions() throws {
-        let head = try tracked([target()])
-        let neck = try tracked([target()], settings: AimSettings(enabled: true, targetPoint: .neck, fovDegrees: 60))
-        XCTAssertEqual(head.targetPoint, .head)
-        XCTAssertEqual(neck.targetPoint, .neck)
-        XCTAssertGreaterThan(try XCTUnwrap(forward.angleDegrees(to: head.direction)),
-                             try XCTUnwrap(forward.angleDegrees(to: neck.direction)))
+        for point in [AimTargetPoint.head, .neck] {
+            var engine = AimingEngine()
+            var camera = forward
+            let settings = AimSettings(enabled: true, targetPoint: point, fovDegrees: 60)
+            _ = engine.update(frame: frame(1, at: 0, candidates: [target()]), settings: settings, at: 0)
+            for tick in 1...30 {
+                let time = Double(tick) / 60
+                let command = try XCTUnwrap(engine.update(frame: frame(UInt64(tick + 1), at: time,
+                    candidates: [target()], forward: camera), settings: settings, at: time).command)
+                XCTAssertEqual(command.targetPoint, point)
+                camera = command.direction
+            }
+            XCTAssertEqual(try XCTUnwrap(forward.angleDegrees(to: camera)), point == .head ? 20 : 10, accuracy: 1e-9)
+        }
     }
 
     func testDisableImmediatelyStopsAndReenablePrimes() throws {
@@ -74,15 +82,80 @@ final class AimingEngineTests: XCTestCase {
         XCTAssertEqual(try tracked(candidates.reversed()).targetID, "a")
     }
 
-    func testRetentionAvoidsSmallTargetSwitchesButReleasesInvalidTarget() {
+    func testRetentionSurvivesCrossingTargetsButReleasesInvalidTarget() {
         var engine = AimingEngine()
         _ = engine.update(frame: frame(1, at: 0, candidates: [target("a", degrees: 10)]), settings: enabled, at: 0)
         let retained = engine.update(frame: frame(2, at: 0.02, candidates: [target("a", degrees: 10), target("b", degrees: 8)]), settings: enabled, at: 0.02)
         XCTAssertEqual(retained.command?.targetID, "a")
         let switched = engine.update(frame: frame(3, at: 0.04, candidates: [target("a", degrees: 10), target("b", degrees: 6)]), settings: enabled, at: 0.04)
-        XCTAssertEqual(switched.command?.targetID, "b")
-        let hidden = engine.update(frame: frame(4, at: 0.06, candidates: [target("a", degrees: 10), target("b", degrees: 6, visible: false)]), settings: enabled, at: 0.06)
-        XCTAssertEqual(hidden.command?.targetID, "a")
+        XCTAssertEqual(switched.command?.targetID, "a")
+        let hidden = engine.update(frame: frame(4, at: 0.06, candidates: [target("a", degrees: 10, visible: false), target("b", degrees: 6)]), settings: enabled, at: 0.06)
+        XCTAssertEqual(hidden.command?.targetID, "b")
+    }
+
+    func testCrowdedCrosshairDoesNotStealValidLock() {
+        var engine = AimingEngine()
+        _ = engine.update(frame: frame(1, at: 0, candidates: [target("locked", degrees: 20)]), settings: enabled, at: 0)
+        let crowd = (0..<20).map { target("other-\($0)", degrees: Double($0) / 10) }
+        for tick in 1...60 {
+            let time = Double(tick) / 60
+            let decision = engine.update(frame: frame(UInt64(tick + 1), at: time,
+                candidates: crowd + [target("locked", degrees: 20)]), settings: enabled, at: time)
+            XCTAssertEqual(decision.command?.targetID, "locked")
+        }
+    }
+
+    func testMovingTargetBelowRateLimitDoesNotTrailAfterAcquisition() throws {
+        for fps in [30, 60, 120] {
+            var engine = AimingEngine()
+            var camera = forward
+            _ = engine.update(frame: frame(1, at: 0, candidates: [target(degrees: 0)]), settings: enabled, at: 0)
+            for tick in 1...fps * 2 {
+                let time = Double(tick) / Double(fps)
+                let angle = 20 * sin(time)
+                let command = try XCTUnwrap(engine.update(frame: frame(UInt64(tick + 1), at: time,
+                    candidates: [target(degrees: angle)], forward: camera), settings: enabled, at: time).command)
+                XCTAssertEqual(command.direction.x, direction(angle).x, accuracy: 1e-12)
+                XCTAssertEqual(command.direction.z, direction(angle).z, accuracy: 1e-12)
+                camera = command.direction
+            }
+        }
+    }
+
+    private func screenTarget(_ id: String, distance: Double?, angle: Double = 10) -> AimCandidate {
+        AimCandidate(id: id, head: direction(angle), neck: direction(angle / 2),
+                     isEnemy: true, isAlive: true, isVisible: true, screenDistance: distance)
+    }
+
+    private func screenFrame(_ sequence: UInt64, at time: Double, candidates: [AimCandidate]) -> AimFrame {
+        AimFrame(sequence: sequence, capturedAt: time, cameraOrigin: AimVector(0, 0, 0),
+                 cameraForward: forward, candidates: candidates, fovSpace: .screenPoints)
+    }
+
+    func testScreenRadiusUsesProjectionInsteadOfAngularCone() {
+        var engine = AimingEngine()
+        let candidates = [screenTarget("outside", distance: 60.01, angle: 1),
+                          screenTarget("edge", distance: 60, angle: 40)]
+        _ = engine.update(frame: screenFrame(1, at: 0, candidates: candidates), settings: enabled, at: 0)
+        let decision = engine.update(frame: screenFrame(2, at: 0.02, candidates: candidates), settings: enabled, at: 0.02)
+        XCTAssertEqual(decision.command?.targetID, "edge")
+    }
+
+    func testInvalidProjectionAndBehindCameraNeverAcquire() {
+        var engine = AimingEngine()
+        let candidates = [screenTarget("missing", distance: nil), screenTarget("nan", distance: .nan),
+                          screenTarget("inf", distance: .infinity), screenTarget("negative", distance: -1),
+                          screenTarget("behind", distance: 0, angle: 179)]
+        XCTAssertEqual(engine.update(frame: screenFrame(1, at: 0, candidates: candidates), settings: enabled, at: 0).status, .noTarget)
+    }
+
+    func testScreenLockReleasesAtRadiusBoundaryAndFOVChange() {
+        var engine = AimingEngine()
+        _ = engine.update(frame: screenFrame(1, at: 0, candidates: [screenTarget("a", distance: 55)]), settings: enabled, at: 0)
+        let crossing = [screenTarget("a", distance: 60), screenTarget("b", distance: 0)]
+        XCTAssertEqual(engine.update(frame: screenFrame(2, at: 0.02, candidates: crossing), settings: enabled, at: 0.02).command?.targetID, "a")
+        let narrower = AimSettings(enabled: true, targetPoint: .head, fovDegrees: 59)
+        XCTAssertEqual(engine.update(frame: screenFrame(3, at: 0.04, candidates: crossing), settings: narrower, at: 0.04).command?.targetID, "b")
     }
 
     func testTargetLossStopsInsteadOfReusingPreviousCommand() {

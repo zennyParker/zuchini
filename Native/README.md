@@ -12,8 +12,8 @@ Runtime behavior:
 - No key prompt; the package replaces the existing `Monite.dylib` load slot with this project's own code. No original Monite implementation is copied.
 - SwiftUI overlay opens automatically. Gameplay touches pass through when the menu is closed, except at the launcher. Aiming pauses while the menu/share sheet is open or the app is inactive.
 - Enumerates loaded Player objects at most twice per second; copied samples and Unity GC handles are used instead of raw field-offset walks. It checks local-player identity, team, death/knockdown, and render visibility.
-- Reads actual Head/Neck transforms and the local player's MainCameraTransform. Physics raycasts require an unobstructed path or a first hit belonging to the target hierarchy. At most eight nearby angular candidates receive physics checks per frame; this is deliberately conservative and can miss an otherwise eligible farther candidate.
-- The existing engine chooses and smooths the target. The adapter converts the direction with Unity's LookRotation and invokes SetAimRotation. Scene/local-player changes, stale frames, missing methods, and managed exceptions suppress writes.
+- Reads actual Head/Neck transforms and Camera.main's transform, and projects targets with WorldToViewportPoint. FOV is a screen-point radius around the game window center. Physics raycasts require an unobstructed path or a first hit belonging to the target hierarchy. At most eight candidates receive physics checks per frame, prioritizing the last applied target then screen-center distance. This budget can still miss another eligible target when the checked candidates are occluded.
+- The engine retains eligible targets and uses bounded acquisition without exponential trailing error. The adapter converts the direction with Unity's LookRotation and invokes SetAimRotation. Scene/local-player changes, stale frames, missing methods, and managed exceptions suppress writes.
 - No firing, server-packet changes, anti-cheat patching, or detection guarantee.
 
 ## Build and package
@@ -36,4 +36,6 @@ Sign the entire output with ESign using the user's certificate/profile on iOS 16
 4. Hold the closed crosshair launcher for 1.2 seconds to share a diagnostic snapshot. The latest report is also written to `Documents/zucchini-diagnostics.json`; it contains version/status/counts/timing, not credentials, packets, or account identifiers.
 5. Return that report and any iOS crash report if startup or aiming fails. These are necessary to distinguish missing runtime methods, no eligible target, rejected aim calls, and actual process faults.
 
-Native runtime invocation and overlay behavior are untested on a physical device. Managed exception handling cannot catch every native crash. No stability or anti-cheat result is asserted for this candidate.
+The user reports that the previous IPA starts and moves the camera, but aiming quality is inadequate. This revised runtime has not been tested on a physical device. Managed exception handling cannot catch every native crash. No stability or anti-cheat result is asserted for this candidate.
+
+See [original aiming analysis](../docs/MONITE-AIMING.md) for recovered behavior, feature inventory, and remaining uncertainties.
