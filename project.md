@@ -4,6 +4,8 @@ This is the source of truth for contributors and AI agents. Read it before chang
 
 ## Purpose and intended users
 
+**Current device report (2026-09-27):** the owner reports unstable aiming and a guest-account ban with a reason described as "using a modifier" after using the first delivered Zucchini IPA. The owner confirmed the exact message as "Using a modifier." The installed filename/hash is not independently established. Do not label any current IPA safe, ban-free, or cleared for live-account testing. The compact-menu revision changes UI only and does not resolve this report. See [BAN-REPORT.md](docs/BAN-REPORT.md).
+
 Build an iOS, IPA-delivered mod menu with **one gameplay feature: Aimbot**. The project owner describes this as a Free Fire internal testing project for a team of **10 people** as of 2026-09-27, including a member who joined the previous day. This team affiliation and authorization are owner-provided context, not independently verified by this repository.
 
 The owner's revised priority is a working end-to-end integration first, acknowledging that anti-cheat detection changes over time. Undetectability is not an acceptance criterion or a promised property. No detection-evasion implementation or detection test result currently exists here. Record the exact game version, environment, and observations for any future test.

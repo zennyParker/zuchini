@@ -33,6 +33,8 @@ The producer calls `sleepForTimeInterval:` through `0xc6ef60` at `0xbd06e0`. Its
 
 The three filter associations are independently supported by decoded loader keys at `0xad6504`, `0xad6570`, `0xad65dc`, their stores at `0xad655c`, `0xad65c8`, `0xad6634`, and consuming branches at `0xbce3ec`–`0xbce428`. In particular, the original visibility helper reads nested state and two integers (`0xbd3510`); this path does **not** perform Zucchini's physics raycast. Equal configuration names therefore do not imply equal visibility behavior.
 
+For successful reads of both integers, that helper returns `second == 1 ? first != 0 : first == -1` (`0xbd36b0`–`0xbd36cc`). Failure branches differ, so this expression describes only its successful-read path. The integers come from a nested object reached through the cached entity field at `0xfdcd38`, then cached offsets at `0xfdcde0` and `0xfdcde8`; their game field names are not established.
+
 Bone helper `0xbd2ca4` follows the entity field and a second cached wrapper field, then calls `0xbd3934`. That helper checks the transform's native-object reference and invokes a cached function with the object and a three-float output buffer. This establishes the data flow, but the wrapper offsets and function's named runtime identity remain unresolved. It is not sufficient evidence to substitute guessed offsets into Zucchini.
 
 ### Selection and rotation path
@@ -86,6 +88,24 @@ This is still **not a complete reverse engineering of the entire package**. The 
 Outstanding evidence includes the exact destination field for the final 16-byte write; named identities of cached bone/camera/state methods; registration and ordering of every alternate aiming callback relative to Unity; and complete algorithms for the additional inventoried features. Static recovery also cannot determine the user's live saved configuration or prove which path ran in a match. No original library code was executed, no device runtime trace was captured, and no claim of complete source recovery is made.
 
 The useful comparison is therefore specific: original snapshot handoff and sampling differ; visibility predicates differ; Neck point construction differs; target reselection differs; default rotation response differs; and rotation is applied through a different interface. These are testable hypotheses for the perceived quality gap, not a proven diagnosis that changing one constant will reproduce Monite. This UI revision does not change the targeting math based on unresolved mappings.
+
+```mermaid
+flowchart TD
+    A[Collect entity and bone state] --> B[Publish reference-counted snapshot]
+    B --> C[Apply eligibility and range filters]
+    C --> D[Choose Head or interpolated Neck point]
+    D --> E[Project point into screen coordinates]
+    E --> F[Rank by screen distance or alternate world-distance branch]
+    F --> G[Check configured activation trigger]
+    G --> H[Construct desired look rotation]
+    H --> I{Configured speed below 0.95?}
+    I -->|Yes| J[Interpolate current and desired quaternion]
+    I -->|No| K[Use desired quaternion directly]
+    J --> L[Validate quaternion and write rotation]
+    K --> L
+```
+
+This diagram summarizes the recovered ordinary path. It does not include every alternate aiming mode, callback, rejection branch or drawing operation.
 
 ## Zucchini changes derived from the comparison
 

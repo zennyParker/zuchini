@@ -8,8 +8,10 @@ final class ZuchiniUITests: XCTestCase {
         app.launch()
         let close = app.buttons["zuchini.close"]
         XCTAssertTrue(close.waitForExistence(timeout: 10))
-        let panel = app.otherElements["zuchini.panel"].firstMatch
+        let panel = app.otherElements["AIMBOT menu"].firstMatch
+        XCTAssertGreaterThan(panel.frame.width, 0)
         XCTAssertLessThanOrEqual(panel.frame.width, 401)
+        XCTAssertLessThanOrEqual(panel.frame.height, 361)
         close.tap()
         let launcher = app.buttons["zuchini.launcher"]
         XCTAssertTrue(launcher.waitForExistence(timeout: 3))

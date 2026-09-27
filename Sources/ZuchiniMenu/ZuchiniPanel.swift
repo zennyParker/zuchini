@@ -42,7 +42,6 @@ public struct ZuchiniPanel: View {
         .shadow(color: .black.opacity(0.4), radius: 30, y: 12)
         .foregroundStyle(theme.text)
         .font(.subheadline)
-        .accessibilityIdentifier("zuchini.panel")
         .tint(theme.accent)
         .environment(\.colorScheme, .dark)
         .accessibilityElement(children: .contain)
@@ -58,6 +57,7 @@ public struct ZuchiniPanel: View {
             Button { store.dismiss() } label: {
                 Image(systemName: "xmark").font(.system(size: 18, weight: .regular))
                     .frame(width: 44, height: 44)
+                    .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Close menu")
