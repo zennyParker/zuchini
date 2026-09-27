@@ -2,7 +2,7 @@
 
 ## Three-control scope revision - 2026-09-27
 
-Removed Speed from the menu and the validation harness. Current controls are Aimbot enable/disable, Head/Neck, and FOV only. Updated the existing core test to exercise both FOV bounds and turning Aimbot off. All 10 core tests passed locally on Windows with zero failures; the project-structure and diff checks also passed. Apple build validation for this revision is pending.
+Removed Speed from the menu and the validation harness. Current controls are Aimbot enable/disable, Head/Neck, and FOV only. Updated the existing core test to exercise both FOV bounds and turning Aimbot off. All 10 core tests passed locally on Windows with zero failures; the project-structure and diff checks also passed. [Apple validation run 36317124773](https://github.com/zennyParker/zuchini/actions/runs/36317124773), for source commit `22450d47639bdda45633e0312057c19fdd677045`, was queued when this status was recorded; no Apple pass is claimed for this revision yet.
 
 End-to-end game tests remain blocked on the missing integration source/API. No local Free Fire gameplay test has been run; a Windows Swift test cannot run the iOS game. The standalone harness is not the requested final product.
 
