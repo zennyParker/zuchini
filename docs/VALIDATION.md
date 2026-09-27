@@ -8,7 +8,7 @@ Implemented portable target selection and smooth aim-direction calculation, plus
 - The deterministic simulation processed 72,000 frames (ten simulated minutes at 120 Hz), including periodic target loss, with 66,000 commands and no invalid output. Maximum observed angular step was about 0.346 degrees in that trajectory. This was accelerated simulation, not a ten-minute device stability test.
 - Fixed-target tests cover 30/60/120 Hz, unit directions, bounded angular speed, no overshoot, and matching final directions.
 - Tests also cover FOV boundaries/live changes, both bones, disabling/re-enabling, hidden/dead/allied targets, missing/invalid points, duplicates, target retention/loss, stale/repeated/future frames, stalls, and reset.
-- Project structure and diff checks passed. The three Apple-only controller tests and Apple builds are pending for this revision.
+- Project structure and diff checks passed. [Apple CI run 36318139889](https://github.com/zennyParker/zuchini/actions/runs/36318139889) passed for commit `2fbc99991a565c13674577a35818115955d99ae8`: all 28 tests (including the three Apple-only controller tests), simulator and unsigned iPhone builds, simulator launch, and artifact upload. The controller tests use a fake host, not Free Fire.
 
 Game adapter implementation, actual iPhone behavior, gameplay correctness, and human-like perception remain unverified. No detection-evasion result is claimed.
 
