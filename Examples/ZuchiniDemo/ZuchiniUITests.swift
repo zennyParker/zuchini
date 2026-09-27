@@ -15,7 +15,8 @@ final class ZuchiniUITests: XCTestCase {
         XCTAssertTrue(launcher.waitForExistence(timeout: 3))
         let initial = launcher.frame
         let destination = app.coordinate(withNormalizedOffset: CGVector(dx: 0.25, dy: 0.65))
-        launcher.press(forDuration: 0.1, thenDragTo: destination)
+        launcher.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+            .press(forDuration: 0.1, thenDragTo: destination)
         XCTAssertFalse(close.exists, "Dragging must not open the menu")
         XCTAssertGreaterThan(abs(launcher.frame.midY - initial.midY), 80)
         XCTAssertGreaterThan(abs(launcher.frame.midX - initial.midX), 40)
