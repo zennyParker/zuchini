@@ -3,6 +3,9 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 SDK="$(xcrun --sdk iphoneos --show-sdk-path)"
+# The Actions host exports the macOS SDK by default. Keep the Swift driver's
+# downstream linker on the same iPhone SDK as its compilation steps.
+export SDKROOT="$SDK"
 OUT="$ROOT/build/native"
 mkdir -p "$OUT"
 COMMON=(-target arm64-apple-ios16.0 -sdk "$SDK" -O -swift-version 5)
