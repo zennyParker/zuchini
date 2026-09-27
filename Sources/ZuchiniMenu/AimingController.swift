@@ -35,6 +35,12 @@ public final class AimingController {
 
     @discardableResult
     public func step(at monotonicTime: TimeInterval) -> AimDecision {
+        step(clock: { monotonicTime })
+    }
+
+    /// Sample the clock after host capture so capture latency is included in freshness checks.
+    @discardableResult
+    public func step(clock: () -> TimeInterval) -> AimDecision {
         guard isActive else { return lastDecision }
         guard let settings = AimSettings(menuState: store.state) else {
             engine.reset(); lastDecision = AimDecision(status: .invalidSettings)
@@ -52,7 +58,7 @@ public final class AimingController {
             engine.reset(); lastDecision = AimDecision(status: .interrupted)
             return lastDecision
         }
-        lastDecision = engine.update(frame: frame, settings: settings, at: monotonicTime)
+        lastDecision = engine.update(frame: frame, settings: settings, at: clock())
         if let command = lastDecision.command {
             // Re-read settings after the external callback in case it changed the menu.
             guard AimSettings(menuState: store.state) == settings, isActive else {

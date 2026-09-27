@@ -40,6 +40,18 @@ jobs:
           ditto DerivedData/Build/Products/Release-iphoneos/ZuchiniDemo.app build/Payload/ZuchiniDemo.app
           ditto -c -k --keepParent build/Payload build/ZuchiniDemo-unsigned.ipa
           ditto -c -k --keepParent DerivedData/Build/Products/Debug-iphonesimulator/ZuchiniDemo.app build/ZuchiniDemo-simulator.zip
+      - name: Build experimental game runtime library
+        run: bash scripts/build-native.sh
+      - name: Upload runtime library
+        uses: actions/upload-artifact@v4
+        with:
+          name: Zucchini-game-runtime
+          path: |
+            build/native/Monite.dylib
+            build/native/dependencies.txt
+            build/native/SHA256.txt
+          if-no-files-found: error
+          retention-days: 14
       - name: Launch menu in an iPhone simulator
         run: |
           DEVICE_ID=$(xcrun simctl list devices available -j | python3 -c 'import json,sys; data=json.load(sys.stdin); print(next(d["udid"] for group in data["devices"].values() for d in group if "iPhone" in d["name"]))')

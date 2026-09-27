@@ -4,6 +4,22 @@ import ZuchiniCore
 import ZuchiniMenu
 
 final class AimingControllerTests: XCTestCase {
+    func testClockIsSampledAfterCaptureAndRejectsCaptureStall() async throws {
+        try await MainActor.run {
+            let store = MenuStore(definition: try AimbotMenu.definition())
+            store.set(.toggle(true), for: "aimbot.enabled")
+            let host = FakeAimingHost()
+            let controller = AimingController(store: store, host: host)
+            controller.activate()
+            var now = 0.0
+            host.frame = sampleFrame(1, at: 0)
+            XCTAssertEqual(controller.step(clock: { now }).status, .priming)
+            host.frame = sampleFrame(2, at: 0.02)
+            host.onCapture = { now = 0.25 }
+            XCTAssertEqual(controller.step(clock: { now }).status, .staleFrame)
+            XCTAssertEqual(host.writes, 0)
+        }
+    }
     func testDisabledAndSuspendedControllerNeverQueriesOrWritesHost() async throws {
         try await MainActor.run {
             let store = MenuStore(definition: try AimbotMenu.definition())
