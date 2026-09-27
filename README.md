@@ -2,9 +2,9 @@
 
 Read [project.md](project.md) first. It defines the iOS Aimbot-only menu, the owner's testing-team context, and what remains before a working Free Fire integration exists.
 
-The repository now also contains an [experimental game-loaded adapter](Native/README.md) and a local game-IPA packager. Device gameplay is not verified.
+The repository now also contains an [experimental game-loaded adapter](Native/README.md) and a local game-IPA packager. The user reports startup and camera movement in the previous IPA, but inadequate aiming. The new tracking candidate still requires device testing.
 
-The menu has an Aimbot enable/disable checkbox, Head/Neck dropdown, and FOV slider in a dark/orange panel based on the supplied references. Speed has been removed. The aiming engine consumes these settings; the experimental native adapter supplies game state and applies aim rotation through recovered runtime methods. A separate **standalone native menu validation harness** remains for UI checks. See [the engine documentation](docs/AIMING.md) and [game adapter instructions](Native/README.md). Compilation does not establish working gameplay.
+The menu has an Aimbot enable/disable checkbox, Head/Neck dropdown, and FOV slider in a dark/orange panel based on the supplied references. Speed has been removed. The aiming engine consumes these settings; the experimental native adapter supplies game state and applies aim rotation through recovered runtime methods. A separate **standalone native menu validation harness** remains for UI checks. The current candidate retains valid targets and uses a screen-point FOV radius. See [the original aiming analysis](docs/MONITE-AIMING.md), [the engine documentation](docs/AIMING.md) and [game adapter instructions](Native/README.md). Compilation does not establish working gameplay.
 
 The product name is Zucchini. Swift modules, the Xcode scheme, and artifact names retain `Zuchini` for compatibility.
 
@@ -18,7 +18,7 @@ The product name is Zucchini. Swift modules, the Xcode scheme, and artifact name
 - `Tests/ZuchiniCoreTests`: state, bounds, schema, and target-choice validation.
 - `docs/VALIDATION.md`: results and device checklist.
 
-Game archives and extracted binaries live outside this source repository and are not CI build dependencies. Local packaging replaces the original menu library with this project's code, which contains no authentication or licensing layer. Startup without the old prompt still requires a device test.
+Game archives and extracted binaries live outside this source repository and are not CI build dependencies. Local packaging replaces the original menu library with this project's code, which contains no authentication or licensing layer. The owner has reported startup on an iPhone; repeat the device test for the revised runtime.
 
 Packaging preserves all bundled resources, including `monite.zip`, whose runtime role is unverified. An earlier removal of that archive was reversed; do not use the smaller `clean` IPA. The `Monite.dylib` filename is required by the game's loader and contains our newly built Zucchini runtime. Do not delete game resources or loader dependencies solely for rebranding.
 

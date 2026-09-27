@@ -14,7 +14,7 @@ String transforms were reconstructed statically: four byte-operation variants co
 | --- | --- |
 | `0xbcc0b8`, `0xbcc170` onward | Clears the selected-target slot, obtains a snapshot and visits candidates. This path does not demonstrate persistent target locking. |
 | `0xbce3ec`–`0xbce454` | Checks snapshot flags and a distance limit. Exact meanings of all snapshot flags remain to be linked to their producer. |
-| `0xbce458`–`0xbce738` | Selects a point from a bone table, with multiple optional interpolated points and a zero-position fallback. Exact enum-to-bone mapping is not fully reconstructed. |
+| `0xbce458`–`0xbce738` | Selects a point from a bone table, with multiple optional interpolated points and a zero-position fallback. The UI identifies Head=1, Neck=2, Chest=3, Pelvis=4; additional enum values remain only partly mapped. |
 | `0xbce73c`–`0xbce7f8` | Projects the point, rejects nonfinite/behind-camera projections, and computes distance from screen center. In the default branch the FOV value is the initial screen-distance threshold; another priority branch minimizes a stored world-distance value. Do not equate this to a full angular cone. |
 | `0xbce7fc`–`0xbce814` | Stores the chosen entity and world point for downstream aiming. |
 | `0xbcd2b8` onward | Branches by trigger setting before the rotation path. Multiple modes exist; not all enum meanings are resolved. |
@@ -25,13 +25,17 @@ String transforms were reconstructed statically: four byte-operation variants co
 | `0xbcfac4`–`0xbcfb14` | Checks quaternion finiteness and squared norm between 0.5 and 2 before writing. |
 | `0xbdaba0`, `0xbdafa4` | Writes 16 bytes at a validated object plus a cached field offset. The destination field's exact identity remains unresolved. Zucchini does not copy this raw-write mechanism. |
 
+The on-disk aim-speed value is **1.0**, which reaches the direct-rotation branch if it remains unchanged at runtime. The on-disk FOV value is 90; it can be changed by configuration.
+
+The Neck mode is an interpolated point, not a direct neck-bone read: its UI maps to enum 2 (`0xb09ddc`/`0xac0298`), the jump table at `0xca9750` selects `0xbce484`, and helper `0xbdac70` computes `pelvis + 0.78 * (head - pelvis)` using the snapshot positions identified by the Head/Pelvis UI cases. Chest uses a separate 0.45 blend. This establishes a remaining difference from Zucchini's direct `get_NeckBone` target. The exact snapshot producer remains incompletely traced, so these are UI-associated point identities, not proven runtime bone-object identities.
+
 The speed association is supported by decoded `aim_speed` at `0xad6720`, its float store to `0xf9b4e4`, and the synchronization block at `0xad7fa8`–`0xad8050` copying that value to the rotation path's `0xf8546c`.
 
 The supplied game's `Player.SetAimRotation` was also inspected. Its ordinary field-store branch writes four floats, while other branches dispatch through runtime overrides. A successful invocation is not proof the game kept that rotation through its subsequent updates. Zucchini continues to use the named method, not an inferred original field offset.
 
 ## Other features inventoried
 
-The following groups are supported by decoded configuration keys in the loader at `0xad6400`–`0xad8000` and related UI paths. They establish configuration presence, not complete or working algorithms.
+The loader contains **67 distinct decoded configuration keys** in this recovered range. The following groups are supported by decoded configuration keys in the loader at `0xad6400`–`0xad8000` and related UI paths. They establish configuration presence, not complete or working algorithms.
 
 | Group | Recovered settings/features | Recovery status |
 | --- | --- | --- |

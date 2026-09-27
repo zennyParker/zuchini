@@ -7,7 +7,10 @@ The previous IPA has user-reported startup and camera movement, but inadequate a
 - All **30 portable Swift tests passed** on Windows, including five added regression cases for crowded target crossings, moving-target lag, screen-radius selection, invalid projections and FOV boundary changes.
 - The 72,000-frame simulation passed with 66,000 commands and a maximum step of approximately 1.5 degrees at 120 Hz. This is accelerated synthetic validation, not device gameplay.
 - Four packaging tests, project structure and diff checks passed.
-- Apple build and replacement game package are pending for this revision; older build evidence below does not validate these native changes.
+- [Apple CI run 36324010358](https://github.com/zennyParker/zuchini/actions/runs/36324010358) passed for source `9a4a4ad0c43ceea34927b32d0b5a516ed89061ac`: **34 Swift tests passed**, simulator/device builds, native game library build and simulator harness launch.
+- New game IPA: `../builds/Zucchini-FreeFire-1.132.1-stable-tracking-unsigned.ipa`, **986,429,593 bytes**. SHA-256: `073335cc9baa8b12796c37d6813f742c679a6abaa2a9475bbe58651ae845570e`. Runtime SHA-256: `a9028cbee711f7dda894f6b08b4f0af15a4d422b351e1fd34032ed4f3e10c377`.
+- All ZIP entries and the complete expected inventory passed validation. All **3,275 preserved resources** match the original SHA-256 values, including `monite.zip`. The game executable, Unity and metadata remain unchanged. The new IPA is only 3,425 bytes larger than the previous resource-preserving candidate.
+- This is the current test candidate; the preceding resource-preserving IPA remains available for comparison. Sign the entire new IPA with ESign on iOS 16+, keeping `com.dts.freefireth`. Head/Neck accuracy, Unity update timing, scoped cameras, occlusion, lifecycle behavior and sustained device stability remain to be tested.
 
 ## Experimental game integration - 2026-09-27
 
@@ -15,7 +18,7 @@ The repository now contains a game-loaded adapter for the supplied Free Fire 1.1
 
 The runtime includes automatic menu presentation, disabled-by-default aiming, Head/Neck selection, FOV, conservative physics visibility checks, lifecycle suppression, stale-frame rejection, and local diagnostic export. No extra gameplay controls were added. The local packager preserves the original main executable, Unity binary, and metadata byte-for-byte, replaces the menu library, adjusts Info.plist, and removes obsolete signature resource files for full re-signing.
 
-### Current resource-preserving package
+### Previous resource-preserving package
 
 - The earlier claim that `monite.zip` was unused was not established by device testing and has been withdrawn. The packager retains that archive again. Its compiled contents and the outer engine's pre-existing modifications are documented in [ARCHIVE-INSPECTION.md](ARCHIVE-INSPECTION.md).
 - Use `../builds/Zucchini-FreeFire-1.132.1-resources-restored-unsigned.ipa`, **986,426,168 bytes**. SHA-256: `973f4711611b4469addf20ed21f59d7976296e7414d809cb34fb4214bb3a4c0b`, identical to the earlier full-resource candidate.
